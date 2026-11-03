@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How popular is Andy Burnham? — Britain Elects</title>
+<meta name="description" content="The Britain Elects tracker of positive and negative views of Andy Burnham, with every prime minister since 1997 compared by days in office.">
+<meta property="og:title" content="How popular is Andy Burnham? — Britain Elects">
+<meta property="og:description" content="Positive and negative views of the Prime Minister, and how he compares with his predecessors.">
+<meta property="og:image" content="https://glasgow46239.github.io/style/logo/png/wordmark.png">
+<link rel="icon" href="https://glasgow46239.github.io/style/logo/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://glasgow46239.github.io/style/be.css">
+<link rel="stylesheet" href="../../assets/site.css">
+<script src="https://glasgow46239.github.io/style/be.js"></script>
+</head>
+<body>
+<div data-site-header data-active="leaders"></div>
+<main id="tracker"></main>
+<div data-site-footer></div>
+
+<script type="application/json" id="tracker-config">
+{
+  "type": "leader",
+  "tracker": "ldr_burnham_all",
+  "person": "Andy Burnham",
+  "role": "the Prime Minister",
+  "among": "Views of Andy Burnham among",
+  "dekTail": "An updating average of every published poll.",
+  "defaultGroup": "overall",
+  "ranges": [
+    { "label": "In office", "from": "2026-07-16" },
+    { "label": "Earliest" }
+  ],
+  "defaultRange": 1,
+  "markers": [["2026-07-16", "Took office"]],
+  "note": "Share of voters with a positive or negative view of Andy Burnham. Weighted local average, smoothed separately before and after he took office on 16 July 2026.",
+  "compare": {
+    "title": "How does Burnham compare?",
+    "dek": "Net rating (positive minus negative) of every prime minister since 1997, counted from the day each took office. Move along the chart to compare them on any day.",
+    "whoLabel": "Prime minister",
+    "ranges": [
+      { "label": "100 days", "days": 100 },
+      { "label": "1 year", "days": 365 },
+      { "label": "3 years", "days": 1095 }
+    ],
+    "defaultRange": 1,
+    "foot": "Day 0 is the day each took office; Burnham's is 16 July 2026. Leaders' figures are smoothed averages of positive and negative views from each era's polls; question wording varies between pollsters and over time."
+  },
+  "articles": { "match": "burnham", "kicker": "On Burnham", "party": "lab" }
+}
+</script>
+<script src="../../assets/site.js"></script>
+<script src="../../assets/tracker.js"></script>
+</body>
+</html>
