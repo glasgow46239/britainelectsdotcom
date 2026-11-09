@@ -5,8 +5,12 @@
  * (index) and page-<group>.json (one per group), written nightly by pipeline/export_page.py.
  * Colours, party names and type come from the style guide's be.js (window.BE).
  *
- * Types: "vi" (party voting intention) and "leader" (positive / negative views of one person,
- * with an optional comparison with predecessors by day in office).
+ * Types: "vi" (party voting intention), "leader" (positive / negative views of one person,
+ * with an optional comparison with predecessors by day in office) and "leaders" (several leaders
+ * ranked side by side, read from the combined export in benma's site/leaders/).
+ *
+ * Chart heights are set in site.css (.tr-plot and .tr-plot.cmp); the charts draw to whatever height
+ * the CSS gives them.
  */
 (function () {
   'use strict';
@@ -14,7 +18,7 @@
   var CFG = JSON.parse(document.getElementById('tracker-config').textContent);
   var ROOT_EL = document.getElementById('tracker');
   var DATA = (CFG.dataBase || 'https://raw.githubusercontent.com/glasgow46239/benma/main/') ;
-  var TRACKER_URL = DATA + 'trackers/' + CFG.tracker + '/data/';
+  var TRACKER_URL = DATA + (CFG.source || ('trackers/' + CFG.tracker + '/data/'));
   var ARTICLES_URL = DATA + 'site/articles.json';
   var CHART_H = 480, CMP_H = 420;
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -77,6 +81,16 @@
     return null;
   }
 
+  function plotHeight(el, fallback) { var h = Math.round(el.getBoundingClientRect().height); return h > 100 ? h : fallback; }
+  /* Hover marker: white centre, coloured ring, white halo (as on the line ends elsewhere) */
+  function ring(x, y, colour, r) {
+    r = r || 5;
+    return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r + 3) + '" fill="' + HALO + '"/>' +
+      '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r + '" fill="' + HALO + '" stroke="' + colour + '" stroke-width="' + (r * 0.6).toFixed(1) + '"/>';
+  }
+
+  if (CFG.type === 'leaders') { leadersPage(); return; }
+
   /* ---------- skeleton ------------------------------------------------------------------ */
   var isLeader = CFG.type === 'leader';
   var chev = '<svg aria-hidden="true" viewBox="0 0 10 14"><path d="M1 5.5 5 1.5 9 5.5M1 8.5 5 12.5 9 8.5" fill="none" stroke="' + INK + '" stroke-width="1.6"/></svg>';
@@ -89,7 +103,8 @@
       '<div class="tr-controls"><label for="tr-group">' + esc(CFG.among) + '</label><div class="tr-select"><select id="tr-group" data-r="select"></select>' + chev + '</div></div>' +
     '</section>' +
     '<section class="tr-cards" aria-label="Latest figures"><div class="tr-asof" data-r="asof">&nbsp;</div><div class="tr-card-grid' + (isLeader ? ' n3' : '') + '" data-r="cards"></div>' +
-      (isLeader ? '<div class="tr-rest" data-r="rest"></div>' : '') + '</section>' +
+      (isLeader ? '<div class="tr-rest" data-r="rest"></div>' : '') +
+      (CFG.seeAlso ? '<p class="tr-see"><a href="' + esc(CFG.seeAlso.href) + '">' + esc(CFG.seeAlso.label) + ' →</a></p>' : '') + '</section>' +
     '<section class="tr-chart" aria-label="Trend chart">' +
       '<div class="tr-plot" data-r="plot" role="img" aria-label="Chart"><div class="tr-status">Loading polling data…</div></div>' +
       '<div class="tr-under"><div class="tr-key">' +
@@ -163,13 +178,13 @@
 
   /* ---------- main chart -------------------------------------------------------------------- */
   var main = null;   // geometry cache for hover
-  function rangeStart() { var r = CFG.ranges[S.range]; return r.from ? isoDay(r.from) : -1e9; }
+  function rangeStart() { var r = CFG.ranges[S.range]; return r.from ? isoDay(r.from) : r.days ? groupMeta().end - r.days : -1e9; }
 
   function buildMain() {
     if (!S.index) return;
     var g = groupMeta(), data = S.groups[g.id], W = S.width;
     if (!data || !W) return;
-    var narrow = W < 640, H = CHART_H, ML = narrow ? 30 : 40, MR = narrow ? 104 : 160, MT = 44, MB = 34;
+    var narrow = W < 640, H = plotHeight(R.plot, CHART_H), ML = narrow ? 30 : 40, MR = narrow ? 104 : 160, MT = 44, MB = 34;
     var start = Math.max(rangeStart(), g.start), end = g.end, span = end - start, plotW = W - ML - MR;
     function X(d) { return ML + (d - start) / span * plotW; }
     var vmax = 0, raw = {};
@@ -261,7 +276,7 @@
     var svg = '<line x1="' + xC.toFixed(1) + '" x2="' + xC.toFixed(1) + '" y1="' + (c.MT - 12) + '" y2="' + (c.H - c.MB) + '" stroke="' + INK + '" stroke-dasharray="2 3"/>';
     var ov = '';
     labels.forEach(function (l) {
-      svg += '<circle cx="' + xC.toFixed(1) + '" cy="' + l.cy.toFixed(1) + '" r="4.5" fill="' + l.st.fill + '" stroke="' + HALO + '" stroke-width="2"/>';
+      svg += ring(xC, l.cy, l.st.fill);
       ov += '<div class="lab" style="left:' + (flip ? xC - 10 : xC + 10).toFixed(1) + 'px;top:' + l.y.toFixed(1) + 'px;transform:' + (flip ? 'translate(-100%,-50%)' : 'translate(0,-50%)') + ';color:' + l.st.ink + '">' +
         '<b>' + f1(l.v) + '<small>%</small></b><span>' + esc(c.narrow ? l.st.short : l.st.name) + '</span></div>';
     });
@@ -289,7 +304,7 @@
   function buildCompare() {
     var W = S.cmpWidth, L0 = S.index.compare; if (!W || !L0) return;
     var maxDay = cmpDays(), lit = S.focus || S.pinned || '';
-    var narrow = W < 520, H = CMP_H, ML = 36, MR = narrow ? 64 : 78, MT = 34, MB = 46, plotW = W - ML - MR;
+    var narrow = W < 520, H = plotHeight(R.cplot, CMP_H), ML = 36, MR = narrow ? 64 : 78, MT = 34, MB = 46, plotW = W - ML - MR;
     function X(d) { return ML + d / maxDay * plotW; }
     var lo = 0, hi = 0;
     L0.forEach(function (L) { for (var d = Math.max(0, L.first); d <= Math.min(L.last, maxDay); d++) { var v = L.netv[d - L.first]; if (v != null) { lo = Math.min(lo, v); hi = Math.max(hi, v); } } });
@@ -320,7 +335,7 @@
       svg += '<line x1="' + x + '" x2="' + x + '" y1="' + (H - MB) + '" y2="' + (H - MB + 6) + '" stroke="' + BASE + '"/>';
       ov += '<div class="xl" style="left:' + x + 'px;top:' + (H - MB + 11) + 'px">' + (maxDay > 365 ? (t === 0 ? '0' : (t / 365) + (t === 365 ? ' year' : ' years')) : t) + '</div>';
     }
-    ov += '<div class="xl" style="left:' + (W - MR) + 'px;top:' + (H - 14) + 'px;transform:translateX(-100%);text-transform:uppercase">Days in office</div>';
+    ov += '<div class="xl" style="left:' + (W - MR) + 'px;top:' + (H - 14) + 'px;transform:translateX(-100%);text-transform:uppercase">' + esc(CFG.compare.axis || 'Days in office') + '</div>';
     var edge = ends.filter(function (e) { return e.edge; }), inner = ends.filter(function (e) { return !e.edge; });
     spread(edge, 16, MT, H - MB - 4);
     edge.forEach(function (e) { e.x = W - MR + 6; });
@@ -339,11 +354,12 @@
     var x = c.X(day), flip = x > c.ML + c.plotW * 0.7, svg = '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + (c.MT - 10) + '" y2="' + (c.H - c.MB) + '" stroke="' + INK + '" stroke-dasharray="2 3"/>';
     var rows = L0.map(function (L) {
       var at = leaderAt(L, day), isLit = L.current || L.surname === c.lit, note = '';
-      if (!at) note = (L.officeDays != null && day >= L.officeDays) ? 'Left office on day ' + L.officeDays : day < L.first ? 'No polling until day ' + L.first : L.current ? 'Not yet reached' : 'No data';
+      if (!at) note = (L.officeDays != null && day >= L.officeDays) ? (CFG.compare.left || 'Left office') + ' on day ' + L.officeDays : day < L.first ? 'No polling until day ' + L.first : L.current ? 'Not yet reached' : 'No data';
       return { L: L, at: at, lit: isLit, note: note, key: at ? at.net : -1e9 };
     });
     rows.filter(function (r) { return r.at; }).sort(function (a, b) { return a.lit - b.lit; }).forEach(function (r) {
-      svg += '<circle cx="' + x.toFixed(1) + '" cy="' + c.Y(r.at.net).toFixed(1) + '" r="' + (r.lit ? 5 : 3.5) + '" fill="' + (r.lit ? r.L.fill : '#A9ACA8') + '" stroke="' + HALO + '" stroke-width="1.5"/>';
+      svg += r.lit ? ring(x, c.Y(r.at.net), r.L.fill)
+        : '<circle cx="' + x.toFixed(1) + '" cy="' + c.Y(r.at.net).toFixed(1) + '" r="3.5" fill="#A9ACA8" stroke="' + HALO + '" stroke-width="1.5"/>';
     });
     R.cplot.querySelector('svg.cursor').innerHTML = svg;
     R.cplot.querySelector('.labels').innerHTML = '<div class="cur" style="left:' + x.toFixed(1) + 'px;top:' + (c.MT - 30) + 'px;transform:' + (flip ? 'translateX(-100%)' : 'translateX(-50%)') + '">Day ' + day + '</div>';
@@ -356,26 +372,224 @@
       return '<button type="button" class="cmp-row' + (r.lit ? ' lit' : '') + '" data-who="' + esc(r.L.surname) + '" aria-pressed="' + (S.pinned === r.L.surname) + '">' +
         '<span class="rk">' + (r.at ? ++n : '') + '</span><span class="who"><i style="background:' + r.L.fill + '"></i><span style="font-weight:' + (r.L.current ? 700 : 400) + '">' + esc(r.L.name) + '</span></span>' + cells + '</button>';
     }).join('');
-    R.ctitle.textContent = 'Net rating on day ' + day + ' in office';
+    R.ctitle.textContent = 'Net rating on day ' + day + ' ' + (CFG.compare.dayPhrase || 'in office');
     var b = leaderAt(current, day);
-    R.cplot.setAttribute('aria-label', 'Net ratings of prime ministers by days in office. On day ' + day + ', ' + current.surname + ' ' + (b ? signed(b.net) : 'not yet reached') + '.');
+    R.cplot.setAttribute('aria-label', 'Net ratings of ' + (CFG.compare.whoPlural || 'prime ministers') + ' by days ' + (CFG.compare.dayPhrase || 'in office') + '. On day ' + day + ', ' + current.surname + ' ' + (b ? signed(b.net) : 'not yet reached') + '.');
   }
   function renderCompareRanges() {
     R.cranges.innerHTML = CFG.compare.ranges.map(function (r, i) { return '<button type="button" data-i="' + i + '" aria-pressed="' + (i === S.cmpRange) + '">' + esc(r.label) + '</button>'; }).join('');
   }
 
   /* ---------- articles ---------------------------------------------------------------------- */
-  function renderArticles(feed) {
+  function renderArticles(feed, artsEl, secEl) {
+    artsEl = artsEl || R.arts; secEl = secEl || R.artsec;
     var items = (feed && feed.items) || [], A = CFG.articles || {}, re = A.match ? new RegExp(A.match, 'i') : null, out = [];
-    if (re) items.forEach(function (a) { if (re.test(a.title + ' ' + a.desc) && out.length < 4) out.push([a, A.kicker || 'Related', series(A.party || 'lab').ink]); });
+    if (re) items.forEach(function (a) { if (re.test(a.title + ' ' + a.desc) && out.length < 4) out.push([a, A.kicker || 'Related', A.party ? series(A.party).ink : INK]); });
     items.forEach(function (a) { if (out.length < 4 && !(re && re.test(a.title + ' ' + a.desc))) out.push([a, 'Latest', MUTED]); });
     if (!out.length) return;
-    R.arts.innerHTML = out.map(function (o) {
+    artsEl.innerHTML = out.map(function (o) {
       var a = o[0];
       return '<article><div class="tr-label" style="color:' + o[2] + '">' + esc(o[1]) + (a.date ? ' · ' + shortDate(isoDay(a.date)) : '') + '</div>' +
         '<h3><a href="' + esc(a.url) + '">' + esc(a.title) + '</a></h3><p>' + esc(a.desc) + '</p></article>';
     }).join('');
-    R.artsec.hidden = false;
+    secEl.hidden = false;
+  }
+
+  /* ---------- "leaders": several leaders ranked side by side ----------------------------------- */
+  function leadersPage() {
+    var SITE_ROOT = (window.BE_SITE && window.BE_SITE.root) || '';
+    var METRICS = [{ id: 'net', label: 'Net rating' }, { id: 'pos', label: 'Positive' }, { id: 'neg', label: 'Negative' }];
+    ROOT_EL.className = 'tr wrap';
+    ROOT_EL.innerHTML =
+      '<section class="tr-head"><div class="tr-meta" data-r="updated">&nbsp;</div>' +
+        '<h1 class="tr-title">' + esc(CFG.headline || '') + '</h1><p class="tr-dek" data-r="dek">&nbsp;</p>' +
+        '<div class="tr-controls"><label for="tr-group">' + esc(CFG.among) + '</label><div class="tr-select"><select id="tr-group" data-r="select"></select>' + chevron() + '</div></div></section>' +
+      '<section class="tr-cards" aria-label="Latest figures"><div class="tr-asof" data-r="asof">&nbsp;</div><div class="ld-grid" data-r="cards"></div></section>' +
+      '<section class="tr-chart" aria-label="Trend chart"><div class="tr-plot" data-r="plot" role="img" aria-label="Chart"><div class="tr-status">Loading polling data…</div></div>' +
+        '<div class="tr-under"><div class="tr-seg" role="group" aria-label="Measure" data-r="metrics"></div><div class="tr-seg" role="group" aria-label="Time range" data-r="ranges"></div></div>' +
+        '<div class="tr-note" data-r="note"></div><div class="tr-source">Source: Britain Elects poll aggregate.</div></section>' +
+      '<section class="tr-section arts-sec" aria-labelledby="arts-h" data-r="artsec" hidden><div class="arts-head"><h2 id="arts-h">From Britain Elects</h2><a href="https://britainelects.substack.com">All articles on Substack</a></div><div class="arts" data-r="arts"></div></section>';
+    var E = {};
+    ROOT_EL.querySelectorAll('[data-r]').forEach(function (el) { E[el.getAttribute('data-r')] = el; });
+    var params = new URLSearchParams(location.search);
+    var T = { index: null, data: {}, group: params.get('group') || CFG.defaultGroup || 'overall', metric: 'net',
+      range: CFG.defaultRange != null ? CFG.defaultRange : 0, hover: null, width: 0, height: 0 };
+    var geo = null;
+
+    function chevron() { return '<svg aria-hidden="true" viewBox="0 0 10 14"><path d="M1 5.5 5 1.5 9 5.5M1 8.5 5 12.5 9 8.5" fill="none" stroke="' + INK + '" stroke-width="1.6"/></svg>'; }
+    function gm() { return T.index.groups.filter(function (g) { return g.id === T.group; })[0] || T.index.groups[0]; }
+    function who(surname) { return T.index.leaders.filter(function (L) { return L.surname === surname; })[0]; }
+    function fmt(v) { return T.metric === 'net' ? signed(v) : f1(v) + '%'; }
+    function decodeLines(raw) {
+      Object.keys(raw).forEach(function (k) {
+        ['net', 'pos', 'neg'].forEach(function (m) {
+          raw[k][m] = { segs: raw[k][m].map(function (s) {
+            var ds = [s.d0]; s.dd.forEach(function (d) { ds.push(ds[ds.length - 1] + d); });
+            return { ds: ds, m: s.m.map(function (v) { return v / 10; }), first: s.d0, last: ds[ds.length - 1] };
+          }) };
+        });
+      });
+      return raw;
+    }
+    function ranked() {
+      var g = gm();
+      return Object.keys(g.leaders).map(function (k) {
+        var m = g.leaders[k], L = who(k);
+        return { k: k, L: L, net: m.pos - m.neg, pos: m.pos, neg: m.neg, chg: (m.pos - m.neg) - (m.posAgo - m.negAgo), fill: BE.fill(L.party), ink: BE.text(L.party) };
+      }).sort(function (a, b) { return b.net - a.net; });
+    }
+
+    function renderTop() {
+      var g = gm(), gen = new Date(T.index.generated), days = T.index.changeDays || 60, rows = ranked(), data = T.data[g.id];
+      var P = series('Positive'), N = series('Negative');
+      E.updated.textContent = 'Updated ' + gen.getUTCDate() + ' ' + MONTH[gen.getUTCMonth()] + ' ' + gen.getUTCFullYear();
+      E.asof.textContent = 'Latest data, ' + longDate(g.end) + ' · ranked by net rating';
+      var top = rows[0], next = rows[1];
+      E.dek.innerHTML = '<b style="color:' + top.ink + '">' + esc(top.L.name) + '</b> is the most popular party leader among ' + esc(g.short) + ', with a net rating of <b style="color:' + (top.net >= 0 ? P.ink : N.ink) + '">' + signed(top.net) + '</b>' +
+        (next ? '; <b style="color:' + next.ink + '">' + esc(next.L.name) + '</b> is next on <b style="color:' + (next.net >= 0 ? P.ink : N.ink) + '">' + signed(next.net) + '</b>' : '') + '. ' + esc(CFG.dekTail || '');
+      // sparklines share one scale so the cards can be compared
+      var lo = 0, hi = 0, from = g.end - 365, lines = {};
+      if (data) rows.forEach(function (r) {
+        var pts = [];
+        data[r.k].net.segs.forEach(function (s) { for (var i = 0; i < s.ds.length; i++) if (s.ds[i] >= from) { pts.push([s.ds[i], s.m[i]]); lo = Math.min(lo, s.m[i]); hi = Math.max(hi, s.m[i]); } });
+        lines[r.k] = pts;
+      });
+      E.cards.innerHTML = rows.map(function (r, i) {
+        var spark = '';
+        if (lines[r.k] && lines[r.k].length > 1) {
+          var sx = function (d) { return (d - from) / 365 * 200; }, sy = function (v) { return 4 + (hi - v) / ((hi - lo) || 1) * 28; };
+          spark = '<svg viewBox="0 0 200 36" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="200" y1="' + sy(0).toFixed(1) + '" y2="' + sy(0).toFixed(1) + '" stroke="#CCCCCC" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>' +
+            '<path d="' + pathOf(lines[r.k].map(function (p) { return [sx(p[0]), sy(p[1])]; })) + '" fill="none" stroke="' + r.fill + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
+        }
+        return '<a class="ld-card" href="' + esc(SITE_ROOT + r.L.url) + '"><i style="background:' + r.fill + '"></i><div>' +
+          '<span class="rk">' + (i + 1) + '</span><span class="nm" style="color:' + r.ink + '">' + esc(r.L.name) + '</span><span class="role">' + esc(r.L.role) + '</span>' +
+          '<span class="num" style="color:' + (r.net >= 0 ? P.ink : N.ink) + '">' + signed(r.net) + '<small>net</small></span>' +
+          '<span class="pn">Positive <b>' + f1(r.pos) + '%</b><br>Negative <b>' + f1(r.neg) + '%</b></span>' +
+          '<span class="chg">' + change(r.chg, days) + '</span>' + spark + '<span class="more">Full tracker →</span></div></a>';
+      }).join('');
+      E.note.textContent = (CFG.note || '') + ' Changes are measured against the average ' + days + ' days before the latest data.';
+    }
+
+    function build() {
+      if (!T.index) return;
+      var g = gm(), data = T.data[g.id], W = T.width; if (!data || !W) return;
+      var narrow = W < 640, H = plotHeight(E.plot, CHART_H), ML = narrow ? 32 : 40, MR = narrow ? 104 : 150, MT = 44, MB = 34;
+      var r = CFG.ranges[T.range], start = Math.max(r.from ? isoDay(r.from) : r.days ? g.end - r.days : -1e9, g.start), end = g.end, span = end - start, plotW = W - ML - MR;
+      function X(d) { return ML + (d - start) / span * plotW; }
+      var keys = ranked().map(function (x) { return x.k; }), lo = 0, hi = 0, paths = [];
+      keys.forEach(function (k) {
+        data[k][T.metric].segs.forEach(function (s) {
+          var idx = []; for (var i = 0; i < s.ds.length; i++) if (s.ds[i] >= start && s.ds[i] <= end) idx.push(i);
+          var stride = Math.max(1, Math.ceil(idx.length / (plotW / 2)));
+          idx = idx.filter(function (_, j) { return j % stride === 0 || j === idx.length - 1; });
+          idx.forEach(function (i) { lo = Math.min(lo, s.m[i]); hi = Math.max(hi, s.m[i]); });
+          if (idx.length > 1) paths.push({ k: k, s: s, idx: idx });
+        });
+      });
+      var yMin = T.metric === 'net' ? Math.floor((lo - 4) / 10) * 10 : 0, yMax = Math.max(T.metric === 'net' ? 10 : 30, Math.ceil((hi + 4) / 10) * 10);
+      function Y(v) { return MT + (yMax - v) / (yMax - yMin) * (H - MT - MB); }
+      var svg = '', ov = '', step = (yMax - yMin) > 100 ? 20 : 10;
+      for (var v = yMin; v <= yMax; v += step) {
+        var zero = T.metric === 'net' && v === 0;
+        if (!(T.metric !== 'net' && v === 0)) svg += '<line x1="' + ML + '" x2="' + (W - MR) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '" stroke="' + (zero ? BASE : GRID) + '" stroke-width="' + (zero ? 1.25 : 1) + '"/>';
+        var lab = T.metric === 'net' ? (v > 0 ? '+' + v : v < 0 ? MINUS + Math.abs(v) : '0') : (v === yMax ? v + '%' : v);
+        ov += '<div class="yl" style="top:' + (Y(v) - 7).toFixed(1) + 'px;width:' + (ML - 6) + 'px;' + (zero ? 'color:' + INK : '') + '">' + lab + '</div>';
+      }
+      var halos = '', strokes = '';
+      paths.forEach(function (p) {
+        var d = pathOf(p.idx.map(function (i) { return [X(p.s.ds[i]), Y(p.s.m[i])]; }));
+        halos += '<path d="' + d + '" fill="none" stroke="' + HALO + '" stroke-width="8.5" stroke-linejoin="round" stroke-linecap="round"/>';
+        strokes += '<path d="' + d + '" fill="none" stroke="' + BE.fill(who(p.k).party) + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+      });
+      svg += halos + strokes;
+      var baseY = T.metric === 'net' ? H - MB : Y(0);
+      svg += '<line x1="' + ML + '" x2="' + (W - MR) + '" y1="' + baseY.toFixed(1) + '" y2="' + baseY.toFixed(1) + '" stroke="' + BASE + '" stroke-width="1.25"/>';
+      xTicksFor(start, end, plotW, narrow).forEach(function (t) {
+        var x = X(t[0]).toFixed(1);
+        svg += '<line x1="' + x + '" x2="' + x + '" y1="' + baseY.toFixed(1) + '" y2="' + (baseY + 6).toFixed(1) + '" stroke="' + BASE + '"/>';
+        ov += '<div class="xl" style="left:' + x + 'px;top:' + (baseY + 11).toFixed(1) + 'px">' + t[1] + '</div>';
+      });
+      geo = { g: g, data: data, keys: keys, W: W, H: H, ML: ML, MR: MR, MT: MT, MB: MB, start: start, end: end, span: span, plotW: plotW, narrow: narrow, X: X, Y: Y };
+      E.plot.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + svg + '</svg><div class="ov">' + ov + '</div><svg class="cursor" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true"></svg><div class="ov labels"></div>';
+      cursor();
+    }
+    function xTicksFor(start, end, plotW, narrow) {
+      var out = [], years = (end - start) / 365.25;
+      if (years > 3) {
+        for (var yr = parts(start).y + 1; dayOf(yr, 0, 1) <= end; yr++) out.push([dayOf(yr, 0, 1), narrow ? "'" + String(yr).slice(2) : String(yr)]);
+      } else {
+        var p0 = parts(start), months = (end - start) / 30.4, st = months > 20 ? (narrow ? 6 : 3) : months > 10 ? (narrow ? 4 : 2) : 1;
+        for (var mi = p0.y * 12 + p0.m + 1; ; mi++) { var yy = Math.floor(mi / 12), mm = mi % 12, d = dayOf(yy, mm, 1); if (d > end) break; if (mm % st === 0) out.push([d, mm === 0 ? String(yy) : MON[mm]]); }
+      }
+      return out;
+    }
+    function cursor() {
+      var c = geo; if (!c) return;
+      var hovering = T.hover !== null, dC = hovering ? Math.max(c.start, Math.min(c.end, Math.round(T.hover))) : c.end;
+      var xC = c.X(dC), flip = hovering && xC > c.ML + c.plotW * (c.narrow ? 0.45 : 0.62), labels = [];
+      c.keys.forEach(function (k) {
+        var v = valAt(c.data[k][T.metric], dC); if (v == null) return;
+        var L = who(k); labels.push({ L: L, v: v, cy: c.Y(v), y0: c.Y(v), fill: BE.fill(L.party), ink: BE.text(L.party) });
+      });
+      spread(labels, c.narrow ? 26 : 31, c.MT + 12, c.H - c.MB - 12);
+      var svg = '<line x1="' + xC.toFixed(1) + '" x2="' + xC.toFixed(1) + '" y1="' + (c.MT - 12) + '" y2="' + (c.H - c.MB) + '" stroke="' + INK + '" stroke-dasharray="2 3"/>', ov = '';
+      labels.forEach(function (l) {
+        svg += ring(xC, l.cy, l.fill);
+        ov += '<div class="lab" style="left:' + (flip ? xC - 10 : xC + 10).toFixed(1) + 'px;top:' + l.y.toFixed(1) + 'px;transform:' + (flip ? 'translate(-100%,-50%)' : 'translate(0,-50%)') + ';color:' + l.ink + '">' +
+          '<b>' + (T.metric === 'net' ? signed(l.v) : f1(l.v) + '<small>%</small>') + '</b><span>' + esc(l.L.surname) + '</span></div>';
+      });
+      ov += '<div class="cur" style="left:' + xC.toFixed(1) + 'px;top:' + (c.MT - 32) + 'px;transform:' + ((hovering && !flip) ? 'translateX(-50%)' : 'translateX(-100%)') + '">' + shortDate(dC) + '</div>';
+      E.plot.querySelector('svg.cursor').innerHTML = svg;
+      E.plot.querySelector('.labels').innerHTML = ov;
+      E.plot.setAttribute('aria-label', 'Line chart of party leaders’ ' + METRICS.filter(function (m) { return m.id === T.metric; })[0].label.toLowerCase() + ' among ' + c.g.short + '. On ' + longDate(dC) + ': ' +
+        labels.map(function (l) { return l.L.name + ' ' + fmt(l.v); }).join(', ') + '.');
+    }
+    function segs() {
+      E.metrics.innerHTML = METRICS.map(function (m) { return '<button type="button" data-m="' + m.id + '" aria-pressed="' + (m.id === T.metric) + '">' + m.label + '</button>'; }).join('');
+      E.ranges.innerHTML = CFG.ranges.map(function (r, i) { return '<button type="button" data-i="' + i + '" aria-pressed="' + (i === T.range) + '">' + esc(r.label) + '</button>'; }).join('');
+    }
+    var raf = 0, pend = null;
+    function hoverAt(e) {
+      var c = geo; if (!c) return;
+      var rect = E.plot.getBoundingClientRect(), vx = (e.clientX - rect.left) / rect.width * c.W;
+      pend = (vx < c.ML - 10 || vx > c.W - c.MR + 20) ? null : c.start + Math.max(0, Math.min(1, (vx - c.ML) / c.plotW)) * c.span;
+      if (!raf) raf = requestAnimationFrame(function () { raf = 0; T.hover = pend; cursor(); });
+    }
+    E.plot.addEventListener('pointermove', hoverAt);
+    E.plot.addEventListener('pointerdown', hoverAt);
+    E.plot.addEventListener('pointerleave', function () { T.hover = null; cursor(); });
+    E.metrics.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; T.metric = b.dataset.m; T.hover = null; segs(); build(); });
+    E.ranges.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; T.range = +b.dataset.i; T.hover = null; segs(); build(); });
+    E.select.addEventListener('change', function () { pick(E.select.value); });
+    if (window.ResizeObserver) new ResizeObserver(function () {
+      var r = E.plot.getBoundingClientRect(), w = Math.round(r.width), h = Math.round(r.height);
+      if (w && (w !== T.width || h !== T.height)) { T.width = w; T.height = h; build(); }
+    }).observe(ROOT_EL);
+
+    function pick(id) {
+      var g = T.index.groups.filter(function (x) { return x.id === id; })[0]; if (!g) return;
+      T.group = id; T.hover = null;
+      var u = new URL(location.href); if (id === (CFG.defaultGroup || 'overall')) u.searchParams.delete('group'); else u.searchParams.set('group', id);
+      history.replaceState(null, '', u);
+      renderTop();
+      if (T.data[id]) { build(); return; }
+      getJSON(TRACKER_URL + g.file).then(function (raw) { T.data[id] = decodeLines(raw); if (T.group === id) { renderTop(); build(); } })
+        .catch(function () { E.plot.innerHTML = '<div class="tr-status">Polling data could not be loaded</div>'; });
+    }
+    getJSON(TRACKER_URL + 'page.json').then(function (index) {
+      T.index = index;
+      if (!index.groups.some(function (g) { return g.id === T.group; })) T.group = index.groups[0].id;
+      var html = '', section = null;
+      index.groups.forEach(function (g) {
+        if (g.section !== section) { if (section) html += '</optgroup>'; section = g.section; if (section) html += '<optgroup label="' + esc(section) + '">'; }
+        html += '<option value="' + esc(g.id) + '"' + (g.id === T.group ? ' selected' : '') + '>' + esc(g.label) + '</option>';
+      });
+      E.select.innerHTML = html + (section ? '</optgroup>' : '');
+      segs();
+      T.width = Math.round(E.plot.getBoundingClientRect().width);
+      pick(T.group);
+    }).catch(function () { E.plot.innerHTML = '<div class="tr-status">Polling data could not be loaded</div>'; });
+    getJSON(ARTICLES_URL).then(function (f) { renderArticles(f, E.arts, E.artsec); }).catch(function () {});
   }
 
   /* ---------- events ------------------------------------------------------------------------ */
@@ -409,9 +623,10 @@
 
   if (window.ResizeObserver) {
     new ResizeObserver(function () {
-      var w = Math.round(R.plot.getBoundingClientRect().width), cw = R.cplot ? Math.round(R.cplot.getBoundingClientRect().width) : 0;
-      if (w && w !== S.width) { S.width = w; buildMain(); }
-      if (cw && cw !== S.cmpWidth) { S.cmpWidth = cw; if (S.index) buildCompare(); }
+      var r = R.plot.getBoundingClientRect(), w = Math.round(r.width), h = Math.round(r.height);
+      var cr = R.cplot ? R.cplot.getBoundingClientRect() : { width: 0, height: 0 }, cw = Math.round(cr.width), ch = Math.round(cr.height);
+      if (w && (w !== S.width || h !== S.height)) { S.width = w; S.height = h; buildMain(); }
+      if (cw && (cw !== S.cmpWidth || ch !== S.cmpHeight)) { S.cmpWidth = cw; S.cmpHeight = ch; if (S.index) buildCompare(); }
     }).observe(ROOT_EL);
   }
 

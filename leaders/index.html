@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who is Britain's most popular party leader? — Britain Elects</title>
+<meta name="description" content="Net ratings of Britain's party leaders, from the Britain Elects poll tracker: Andy Burnham, Kemi Badenoch, Nigel Farage, Ed Davey and Zack Polanski.">
+<meta property="og:title" content="Who is Britain's most popular party leader? — Britain Elects">
+<meta property="og:description" content="Every party leader's positive and negative ratings, side by side.">
+<meta property="og:image" content="https://glasgow46239.github.io/style/logo/png/wordmark.png">
+<link rel="icon" href="https://glasgow46239.github.io/style/logo/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://glasgow46239.github.io/style/be.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script src="https://glasgow46239.github.io/style/be.js"></script>
+</head>
+<body>
+<div data-site-header data-active="leaders"></div>
+<main id="tracker"></main>
+<div data-site-footer></div>
+
+<script type="application/json" id="tracker-config">
+{
+  "type": "leaders",
+  "source": "site/leaders/",
+  "headline": "Who is Britain’s most popular party leader?",
+  "among": "Views of party leaders among",
+  "dekTail": "The latest from Ben Walker's Britain Elects Poll Tracker.",
+  "defaultGroup": "overall",
+  "ranges": [
+    {
+      "label": "Past 6 months",
+      "days": 183
+    },
+    {
+      "label": "Past year",
+      "days": 365
+    },
+    {
+      "label": "Since 2024",
+      "from": "2024-06-01"
+    }
+  ],
+  "defaultRange": 1,
+  "note": "Each leader's line starts when they became party leader. Net rating is the share with a positive view minus the share with a negative view. Weighted local averages of published polls.",
+  "articles": {
+    "match": "popular|leader|burnham|badenoch|farage|davey|polanski",
+    "kicker": "On the leaders"
+  }
+}
+</script>
+<script src="../assets/site.js"></script>
+<script src="../assets/tracker.js"></script>
+</body>
+</html>
