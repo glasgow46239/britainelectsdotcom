@@ -30,7 +30,7 @@
   function longDate(day) { var p = parts(day); return p.d + ' ' + MONTH[p.m] + ' ' + p.y; }
   function shortDate(day) { var p = parts(day); return p.d + ' ' + MON[p.m] + ' ' + p.y; }
   function signed(v) { return Math.abs(v) < 0.05 ? '0.0' : (v > 0 ? '+' : MINUS) + Math.abs(v).toFixed(1); }
-  function change(c, days) { return Math.abs(c) < 0.05 ? 'No change on ' + days + ' days ago' : signed(c) + ' on ' + days + ' days ago'; }
+  function change(c, days) { return Math.abs(c) < 0.05 ? '+0.0 on ' + days + ' days ago' : signed(c) + ' on ' + days + ' days ago'; }
   function f1(n) { return n.toFixed(1); }
   function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
   function pathOf(pts) { var o = ''; for (var i = 0; i < pts.length; i++) o += (i ? 'L' : 'M') + pts[i][0].toFixed(1) + ',' + pts[i][1].toFixed(1); return o; }
