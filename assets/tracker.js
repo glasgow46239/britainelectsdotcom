@@ -34,7 +34,8 @@
   function longDate(day) { var p = parts(day); return p.d + ' ' + MONTH[p.m] + ' ' + p.y; }
   function shortDate(day) { var p = parts(day); return p.d + ' ' + MON[p.m] + ' ' + p.y; }
   function signed(v) { return Math.abs(v) < 0.05 ? '0.0' : (v > 0 ? '+' : MINUS) + Math.abs(v).toFixed(1); }
-  function change(c, days) { return Math.abs(c) < 0.05 ? '+0.0 on ' + days + ' days ago' : signed(c) + ' on ' + days + ' days ago'; }
+  /* the cards show the bare change; the 'Latest data' line says what it is measured against */
+  function change(c) { return Math.abs(c) < 0.05 ? '+0.0' : signed(c); }
   function f1(n) { return n.toFixed(1); }
   function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
   function pathOf(pts) { var o = ''; for (var i = 0; i < pts.length; i++) o += (i ? 'L' : 'M') + pts[i][0].toFixed(1) + ',' + pts[i][1].toFixed(1); return o; }
@@ -141,7 +142,7 @@
   function renderTop() {
     var g = groupMeta(), days = S.index.changeDays || 60, gen = new Date(S.index.generated);
     R.updated.textContent = 'Updated ' + gen.getUTCDate() + ' ' + MONTH[gen.getUTCMonth()] + ' ' + gen.getUTCFullYear();
-    R.asof.textContent = 'Latest data, ' + longDate(g.end);
+    R.asof.textContent = 'Latest data, ' + longDate(g.end) + ' \u00b7 changes on ' + days + ' days ago';
     var html = '';
     if (!isLeader) {
       var sumNow = 0, sumAgo = 0;
@@ -443,7 +444,7 @@
       var g = gm(), gen = new Date(T.index.generated), days = T.index.changeDays || 60, rows = ranked(), data = T.data[g.id];
       var P = series('Positive'), N = series('Negative');
       E.updated.textContent = 'Updated ' + gen.getUTCDate() + ' ' + MONTH[gen.getUTCMonth()] + ' ' + gen.getUTCFullYear();
-      E.asof.textContent = 'Latest data, ' + longDate(g.end) + ' · ranked by net rating';
+      E.asof.textContent = 'Latest data, ' + longDate(g.end) + ' \u00b7 ranked by net rating \u00b7 changes on ' + days + ' days ago';
       var top = rows[0], next = rows[1];
       E.dek.innerHTML = '<b style="color:' + top.ink + '">' + esc(top.L.name) + '</b> is the most popular party leader among ' + esc(g.short) + ', with a net rating of <b style="color:' + (top.net >= 0 ? P.ink : N.ink) + '">' + signed(top.net) + '</b>' +
         (next ? '; <b style="color:' + next.ink + '">' + esc(next.L.name) + '</b> is next on <b style="color:' + (next.net >= 0 ? P.ink : N.ink) + '">' + signed(next.net) + '</b>' : '') + '. ' + esc(CFG.dekTail || '');

@@ -8,7 +8,7 @@
   window.BE_SITE = { root: ROOT, style: STYLE };
 
   var NAV = [
-    { id: 'polls', label: 'Polls', href: ROOT },
+    { id: 'polls', label: 'Polls', href: ROOT + 'polls/' },
     { id: 'leaders', label: 'Leaders', href: ROOT + 'leaders/' },
     { id: 'predicts', label: 'Britain Predicts', href: 'https://glasgow46239.github.io/britainpredicts/' },
     { id: 'substack', label: 'Substack', href: 'https://britainelects.substack.com' }

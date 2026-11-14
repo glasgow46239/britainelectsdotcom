@@ -3,47 +3,81 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What do the polls say? — Britain Elects</title>
-<meta name="description" content="The Britain Elects poll tracker: an updating average of every published Westminster voting intention poll, for all voters and by age, social grade, nation and region.">
-<meta property="og:title" content="What do the polls say? — Britain Elects">
-<meta property="og:description" content="An updating average of every published Westminster voting intention poll.">
+<title>Britain Elects — polls, elections and analysis</title>
+<meta name="description" content="Britain Elects: the latest UK opinion polls, poll trackers for every party and party leader, and analysis by Ben Walker.">
+<meta property="og:title" content="Britain Elects">
+<meta property="og:description" content="The latest UK opinion polls, poll trackers and analysis by Ben Walker.">
 <meta property="og:image" content="https://glasgow46239.github.io/style/logo/png/wordmark.png">
 <link rel="icon" href="https://glasgow46239.github.io/style/logo/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://glasgow46239.github.io/style/be.css">
 <link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/home.css">
 <script src="https://glasgow46239.github.io/style/be.js"></script>
 </head>
 <body>
-<div data-site-header data-active="polls"></div>
-<main id="tracker"></main>
-<div data-site-footer></div>
+<div data-site-header data-active="home"></div>
 
-<script type="application/json" id="tracker-config">
-{
-  "type": "vi",
-  "tracker": "vi_westminster_24",
-  "headline": "What do the polls say?",
-  "among": "Voting intention among",
-  "dekTail": "The latest from Ben Walker's Britain Elects Poll Tracker.",
-  "defaultGroup": "overall",
-  "ranges": [
-    { "label": "Since 2024", "from": "2024-01-01" },
-    { "label": "Since 2020", "from": "2020-01-01" },
-    { "label": "Earliest", "from": "2017-08-01" }
-  ],
-  "defaultRange": 1,
-  "markers": [
-    ["2010-05-06", "GE 2010", "GE '10"],
-    ["2015-05-07", "GE 2015", "GE '15"],
-    ["2017-06-08", "GE 2017", "GE '17"],
-    ["2019-12-12", "GE 2019", "GE '19"],
-    ["2024-07-04", "GE 2024", "GE '24"]
-  ],
-  "note": "Britain Elects poll tracker, smoothed separately between general elections (voting intentions) or leader changes (approval ratings).",
-  "articles": { "match": null }
-}
-</script>
+<main class="hm wrap">
+  <h1 class="visually-hidden">Britain Elects</h1>
+
+  <div class="hm-top">
+    <article class="hm-lead" data-r="lead" aria-label="Latest article">
+      <div class="hm-lead-ph"></div>
+    </article>
+
+    <section class="hm-polls" aria-labelledby="hm-polls-h">
+      <div class="hm-kicker">Westminster voting intention</div>
+      <h2 id="hm-polls-h"><a href="polls/">What do the polls say?</a></h2>
+      <p class="hm-sum" data-r="pollsum">&nbsp;</p>
+      <div class="hm-rows" data-r="pollrows"></div>
+      <a class="hm-mini" href="polls/" data-r="pollchart" aria-label="Poll tracker chart, past year: open the full tracker"></a>
+      <div class="hm-asof" data-r="pollasof">&nbsp;</div>
+      <a class="hm-more" href="polls/">Full poll tracker &rarr;</a>
+    </section>
+  </div>
+
+  <section class="hm-sec" aria-labelledby="hm-ld-h">
+    <div class="hm-sec-head">
+      <h2 id="hm-ld-h">How popular are the party leaders?</h2>
+      <a href="leaders/">Compare the leaders &rarr;</a>
+    </div>
+    <div class="hm-asof" data-r="ldasof">&nbsp;</div>
+    <div class="hm-leaders" data-r="leaders"></div>
+  </section>
+
+  <section class="hm-sec" aria-labelledby="hm-arts-h">
+    <div class="hm-sec-head">
+      <h2 id="hm-arts-h">Latest from Britain Elects</h2>
+      <a href="https://britainelects.substack.com/archive">All articles &rarr;</a>
+    </div>
+    <div class="hm-arts" data-r="arts"></div>
+  </section>
+
+  <section class="hm-sec" aria-labelledby="hm-tr-h">
+    <div class="hm-sec-head"><h2 id="hm-tr-h">Trackers</h2></div>
+    <div class="hm-dir">
+      <a href="polls/"><b>Westminster voting intention</b><span>All voters, by age, social grade, nation and region</span></a>
+      <a href="leaders/"><b>Party leaders compared</b><span>Who is Britain&rsquo;s most popular party leader?</span></a>
+      <a href="leaders/burnham/"><b>Andy Burnham</b><span>With every prime minister since 1997 compared</span></a>
+      <a href="leaders/badenoch/"><b>Kemi Badenoch</b><span>With Leaders of the Opposition since 2005 compared</span></a>
+      <a href="leaders/farage/"><b>Nigel Farage</b><span>Positive and negative views</span></a>
+      <a href="leaders/davey/"><b>Ed Davey</b><span>Positive and negative views</span></a>
+      <a href="leaders/polanski/"><b>Zack Polanski</b><span>Positive and negative views</span></a>
+      <a href="https://glasgow46239.github.io/britainpredicts/"><b>Britain Predicts</b><span>How the polls translate into seats</span></a>
+    </div>
+  </section>
+
+  <section class="hm-sub" aria-labelledby="hm-sub-h">
+    <div>
+      <h2 id="hm-sub-h">Get Britain Elects in your inbox</h2>
+      <p>Analysis of the polls and elections from Ben Walker, on Substack.</p>
+    </div>
+    <a class="hm-btn" href="https://britainelects.substack.com/subscribe">Subscribe</a>
+  </section>
+</main>
+
+<div data-site-footer></div>
 <script src="assets/site.js"></script>
-<script src="assets/tracker.js"></script>
+<script src="assets/home.js"></script>
 </body>
 </html>

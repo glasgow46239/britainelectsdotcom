@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What do the polls say? — Britain Elects</title>
+<meta name="description" content="The Britain Elects poll tracker: an updating average of every published Westminster voting intention poll, for all voters and by age, social grade, nation and region.">
+<meta property="og:title" content="What do the polls say? — Britain Elects">
+<meta property="og:description" content="An updating average of every published Westminster voting intention poll.">
+<meta property="og:image" content="https://glasgow46239.github.io/style/logo/png/wordmark.png">
+<link rel="icon" href="https://glasgow46239.github.io/style/logo/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://glasgow46239.github.io/style/be.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script src="https://glasgow46239.github.io/style/be.js"></script>
+</head>
+<body>
+<div data-site-header data-active="polls"></div>
+<main id="tracker"></main>
+<div data-site-footer></div>
+
+<script type="application/json" id="tracker-config">
+{
+  "type": "vi",
+  "tracker": "vi_westminster_24",
+  "headline": "What do the polls say?",
+  "among": "Voting intention among",
+  "dekTail": "The latest from Ben Walker's Britain Elects Poll Tracker.",
+  "defaultGroup": "overall",
+  "ranges": [
+    { "label": "Since 2024", "from": "2024-01-01" },
+    { "label": "Since 2020", "from": "2020-01-01" },
+    { "label": "Earliest", "from": "2017-08-01" }
+  ],
+  "defaultRange": 1,
+  "markers": [
+    ["2010-05-06", "GE 2010", "GE '10"],
+    ["2015-05-07", "GE 2015", "GE '15"],
+    ["2017-06-08", "GE 2017", "GE '17"],
+    ["2019-12-12", "GE 2019", "GE '19"],
+    ["2024-07-04", "GE 2024", "GE '24"]
+  ],
+  "note": "Britain Elects poll tracker, smoothed separately between general elections (voting intentions) or leader changes (approval ratings).",
+  "articles": { "match": null }
+}
+</script>
+<script src="../assets/site.js"></script>
+<script src="../assets/tracker.js"></script>
+</body>
+</html>
