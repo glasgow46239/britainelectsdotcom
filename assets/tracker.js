@@ -37,6 +37,11 @@
   /* the cards show the bare change; the 'Latest data' line says what it is measured against */
   function change(c) { return Math.abs(c) < 0.05 ? '+0.0' : signed(c); }
   function f1(n) { return n.toFixed(1); }
+  /* a Britain Predicts-style tile: figure, change, rule, label */
+  function card(fill, num, unit, chg, label) {
+    return '<div class="tr-card" style="--fill:' + fill + '"><div class="num">' + num + (unit ? '<small>' + unit + '</small>' : '') + '</div>' +
+      '<div class="chg">' + chg + '</div><div class="rule"></div><div class="nm">' + esc(label) + '</div></div>';
+  }
   function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
   function pathOf(pts) { var o = ''; for (var i = 0; i < pts.length; i++) o += (i ? 'L' : 'M') + pts[i][0].toFixed(1) + ',' + pts[i][1].toFixed(1); return o; }
   function getJSON(url) { return fetch(url, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
@@ -154,8 +159,7 @@
       var top = cards[0], second = cards[1];
       if (g.cards.length === 5) cards.push({ st: series('oth'), v: Math.max(0, 100 - sumNow), chg: Math.max(0, 100 - sumNow) - Math.max(0, 100 - sumAgo) });
       cards.forEach(function (c) {
-        html += '<div class="tr-card"><i style="background:' + c.st.fill + '"></i><div><div class="nm" style="color:' + c.st.ink + '">' + esc(c.st.name) + '</div>' +
-          '<div class="num" style="color:' + c.st.ink + '">' + f1(c.v) + '<small>%</small></div><div class="chg">' + change(c.chg, days) + '</div></div></div>';
+        html += card(c.st.fill, f1(c.v), '%', change(c.chg), c.st.short);
       });
       var gap = Math.round(+f1(top.v) * 10 - +f1(second.v) * 10) / 10;
       R.dek.innerHTML = '<b style="color:' + top.st.ink + '">' + esc(cap(top.st.the)) + '</b> ' + (gap === 0 ? 'and' : 'lead') + ' <b style="color:' + second.st.ink + '">' + esc(second.st.the) + '</b> ' +
@@ -167,9 +171,8 @@
       R.title.innerHTML = 'How <span style="color:' + hiInk + '">' + (net >= 0 ? 'popular' : 'unpopular') + '</span> is ' + esc(CFG.person) + '?';
       R.dek.innerHTML = '<b style="color:' + P.ink + '">' + f1(pos) + '%</b> of ' + esc(g.short) + ' have a positive view of ' + esc(CFG.role) + ' and <b style="color:' + N.ink + '">' + f1(neg) + '%</b> a negative one, a net rating of <b style="color:' + hiInk + '">' + signed(net) + '</b>. ' + esc(CFG.dekTail || '') +
         (CFG.method ? ' <a href="' + esc(CFG.method) + '">How this works</a>' : '');
-      [[P, f1(pos), '%', pos - g.ago.Positive, P.fill], [N, f1(neg), '%', neg - g.ago.Negative, N.fill], [{ name: 'Net rating', ink: hiInk }, signed(net), '', net - netAgo, INK]].forEach(function (c) {
-        html += '<div class="tr-card"><i style="background:' + c[4] + '"></i><div><div class="nm" style="color:' + c[0].ink + '">' + esc(c[0].name) + '</div>' +
-          '<div class="num" style="color:' + c[0].ink + '">' + c[1] + '<small>' + c[2] + '</small></div><div class="chg">' + change(c[3], days) + '</div></div></div>';
+      [['Positive', f1(pos), '%', pos - g.ago.Positive, P.fill], ['Negative', f1(neg), '%', neg - g.ago.Negative, N.fill], ['Net', signed(net), '', net - netAgo, INK]].forEach(function (c) {
+        html += card(c[4], c[1], c[2], change(c[3]), c[0]);
       });
       R.rest.textContent = 'The remaining ' + f1(Math.max(0, 100 - pos - neg)) + '% have no view either way or don’t know.';
     }
@@ -444,7 +447,7 @@
       var g = gm(), gen = new Date(T.index.generated), days = T.index.changeDays || 60, rows = ranked(), data = T.data[g.id];
       var P = series('Positive'), N = series('Negative');
       E.updated.textContent = 'Updated ' + gen.getUTCDate() + ' ' + MONTH[gen.getUTCMonth()] + ' ' + gen.getUTCFullYear();
-      E.asof.textContent = 'Latest data, ' + longDate(g.end) + ' \u00b7 ranked by net rating \u00b7 changes on ' + days + ' days ago';
+      E.asof.textContent = 'Latest data, ' + longDate(g.end) + ' \u00b7 ranked by net rating';
       var top = rows[0], next = rows[1];
       E.dek.innerHTML = '<b style="color:' + top.ink + '">' + esc(top.L.name) + '</b> is the most popular party leader among ' + esc(g.short) + ', with a net rating of <b style="color:' + (top.net >= 0 ? P.ink : N.ink) + '">' + signed(top.net) + '</b>' +
         (next ? '; <b style="color:' + next.ink + '">' + esc(next.L.name) + '</b> is next on <b style="color:' + (next.net >= 0 ? P.ink : N.ink) + '">' + signed(next.net) + '</b>' : '') + '. ' + esc(CFG.dekTail || '');
@@ -459,16 +462,16 @@
         var spark = '';
         if (lines[r.k] && lines[r.k].length > 1) {
           var sx = function (d) { return (d - from) / 365 * 200; }, sy = function (v) { return 4 + (hi - v) / ((hi - lo) || 1) * 28; };
-          spark = '<svg viewBox="0 0 200 36" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="200" y1="' + sy(0).toFixed(1) + '" y2="' + sy(0).toFixed(1) + '" stroke="#CCCCCC" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>' +
-            '<path d="' + pathOf(lines[r.k].map(function (p) { return [sx(p[0]), sy(p[1])]; })) + '" fill="none" stroke="' + r.fill + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
+          spark = '<svg viewBox="0 0 200 36" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="200" y1="' + sy(0).toFixed(1) + '" y2="' + sy(0).toFixed(1) + '" stroke="rgba(255,255,255,0.55)" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>' +
+            '<path d="' + pathOf(lines[r.k].map(function (p) { return [sx(p[0]), sy(p[1])]; })) + '" fill="none" stroke="#FFFFFF" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
         }
-        return '<a class="ld-card" href="' + esc(SITE_ROOT + r.L.url) + '"><i style="background:' + r.fill + '"></i><div>' +
-          '<span class="rk">' + (i + 1) + '</span><span class="nm" style="color:' + r.ink + '">' + esc(r.L.name) + '</span><span class="role">' + esc(r.L.role) + '</span>' +
-          '<span class="num" style="color:' + (r.net >= 0 ? P.ink : N.ink) + '">' + signed(r.net) + '<small>net</small></span>' +
-          '<span class="pn">Positive <b>' + f1(r.pos) + '%</b><br>Negative <b>' + f1(r.neg) + '%</b></span>' +
-          '<span class="chg">' + change(r.chg, days) + '</span>' + spark + '<span class="more">Full tracker →</span></div></a>';
+        return '<a class="ld-card" href="' + esc(SITE_ROOT + r.L.url) + '" style="--fill:' + r.fill + '">' +
+          '<span class="num">' + signed(r.net) + '<small>net</small></span>' +
+          '<span class="pn">Positive <b>' + f1(r.pos) + '%</b><br>Negative <b>' + f1(r.neg) + '%</b></span>' + spark +
+          '<span class="rule"></span><span class="lab"><span class="rk">' + (i + 1) + '</span><span class="nm">' + esc(r.L.surname || r.L.name.split(' ').pop()) + '</span></span>' +
+          '<span class="role">' + esc(r.L.role) + '</span></a>';
       }).join('');
-      E.note.textContent = (CFG.note || '') + ' Changes are measured against the average ' + days + ' days before the latest data.';
+      E.note.textContent = CFG.note || '';
     }
 
     function build() {

@@ -22,37 +22,39 @@
   function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
   function pathOf(pts) { var o = ''; for (var i = 0; i < pts.length; i++) o += (i ? 'L' : 'M') + pts[i][0].toFixed(1) + ',' + pts[i][1].toFixed(1); return o; }
   function getJSON(url) { return fetch(url, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
-  function party(k) { if (k === 'Oth') k = 'oth'; return { name: BE.name(k, 'general'), the: BE.name(k, 'analysis'), fill: BE.fill(k) || '#A9ACA8', ink: BE.text(k) || INK }; }
+  function party(k) { if (k === 'Oth') k = 'oth'; return { name: BE.name(k, 'general'), the: BE.name(k, 'analysis'), short: BE.name(k, 'short'), fill: BE.fill(k) || '#A9ACA8', ink: BE.text(k) || INK }; }
   function lines(seg) {  // decode one exported segment into [[day, value], ...]
     var d = seg.d0, out = [[d, seg.m[0] / 10]];
     for (var i = 0; i < seg.dd.length; i++) { d += seg.dd[i]; out.push([d, seg.m[i + 1] / 10]); }
     return out;
   }
 
-  /* ---- Substack: lead story and the next six ------------------------------------- */
-  function img(a, cls) { return a.image ? '<img' + (cls ? ' class="' + cls + '"' : '') + ' src="' + esc(a.image) + '" alt="" loading="lazy">' : ''; }
+  /* ---- Substack: the lead story centred between two columns, as on the Substack home page ---- */
+  var BYLINE = 'Ben Walker', ICON = 'https://glasgow46239.github.io/style/logo/mark-mono-black.svg';
+  function pic(a, lead) {
+    var inner = a.image ? '<img src="' + esc(a.image) + '" alt="" loading="' + (lead ? 'eager' : 'lazy') + '">' : '<span class="ph"><img src="' + ICON + '" alt=""></span>';
+    return '<a class="pic" href="' + esc(a.url) + '" tabindex="-1" aria-hidden="true">' + inner + '</a>';
+  }
+  function meta(a) { return '<div class="hm-meta">' + (a.date ? shortDate(isoDay(a.date)) + ' · ' : '') + BYLINE + '</div>'; }
+  function story(a, cls, lead) {
+    return '<article class="' + cls + '">' + pic(a, lead) + '<h3><a href="' + esc(a.url) + '">' + esc(a.title) + '</a></h3>' +
+      (a.desc ? '<p>' + esc(a.desc) + '</p>' : '') + meta(a) + '</article>';
+  }
   getJSON(ARTICLES).then(function (feed) {
     var items = (feed.items || []).filter(function (a) { return a.title && a.url; });
-    if (!items.length) return;
-    var a = items[0];
-    R.lead.innerHTML = '<a href="' + esc(a.url) + '" tabindex="-1" aria-hidden="true">' + img(a) + '</a>' +
-      '<div class="' + (a.image ? '' : 'rule') + '"><div class="hm-kicker">Latest analysis' + (a.date ? ' · ' + shortDate(isoDay(a.date)) : '') + '</div>' +
-      '<h2><a href="' + esc(a.url) + '">' + esc(a.title) + '</a></h2><p>' + esc(a.desc) + '</p>' +
-      '<a class="hm-more" href="' + esc(a.url) + '">Read on Substack &rarr;</a></div>' +
-      '<ul class="hm-also" aria-label="More stories">' + items.slice(1, 4).map(function (b) {
-        return '<li><span class="hm-kicker">' + (b.date ? shortDate(isoDay(b.date)) : '') + '</span><a href="' + esc(b.url) + '">' + esc(b.title) + '</a></li>';
-      }).join('') + '</ul>';
-    R.arts.innerHTML = items.slice(4, 10).map(function (a) {
-      return '<article class="hm-art' + (a.image ? '' : ' noimg') + '"><a href="' + esc(a.url) + '" tabindex="-1" aria-hidden="true">' + img(a) + '</a>' +
-        '<div class="hm-kicker">' + (a.date ? shortDate(isoDay(a.date)) : '') + '</div>' +
-        '<h3><a href="' + esc(a.url) + '">' + esc(a.title) + '</a></h3><p>' + esc(a.desc) + '</p></article>';
-    }).join('');
-  }).catch(function () { R.lead.innerHTML = '<div class="rule"><h2><a href="https://britainelects.substack.com">Read Britain Elects on Substack</a></h2></div>'; });
+    if (!items.length) throw new Error('empty');
+    var side = function (list) { return '<div class="col">' + list.map(function (a) { return story(a, 'hm-card'); }).join('') + '</div>'; };
+    R.feed.innerHTML = story(items[0], 'hm-lead', true) + side(items.slice(1, 3)) + side(items.slice(3, 5));
+    var more = items.slice(5, 11);
+    if (more.length) {
+      R.arts.innerHTML = more.map(function (a) { return story(a, 'hm-card'); }).join('');
+      R.moresec.hidden = false;
+    }
+  }).catch(function () { R.feed.innerHTML = '<p><a href="https://britainelects.substack.com">Read Britain Elects on Substack</a></p>'; });
 
-  /* ---- polls: latest figures as a tight table, like the map tooltip cards --------- */
-  function chgCell(c) {
-    var col = Math.abs(c) < 0.05 ? BE.neutral('inkMuted') : BE.signal(c > 0 ? 'positive' : 'negative', 'text');
-    return '<span class="c" style="color:' + col + '">' + signed(c) + '</span>';
+  /* ---- polls: Britain Predicts-style tiles, as on the poll tracker ------------------------ */
+  function tile(fill, num, chg, label) {
+    return '<div class="tr-card" style="--fill:' + fill + '"><div class="num">' + num + '<small>%</small></div><div class="chg">' + chg + '</div><div class="rule"></div><div class="nm">' + esc(label) + '</div></div>';
   }
   getJSON(VI + 'page.json').then(function (index) {
     var g = index.groups.filter(function (x) { return x.id === 'overall'; })[0], days = index.changeDays || 60;
@@ -63,20 +65,16 @@
     if (g.cards.length === 5) rows.push({ k: 'Oth', st: party('oth'), v: Math.max(0, 100 - sumNow), c: Math.max(0, 100 - sumNow) - Math.max(0, 100 - sumAgo) });
     R.pollsum.innerHTML = '<b style="color:' + top.st.ink + '">' + esc(cap(top.st.the)) + '</b> ' + (gap === 0 ? 'and' : 'lead') + ' <b style="color:' + second.st.ink + '">' + esc(second.st.the) + '</b>' +
       (gap === 0 ? ' are level.' : ' by ' + f1(gap) + (gap === 1 ? ' point.' : ' points.'));
-    var scale = Math.max(40, Math.ceil(top.v / 10) * 10);  // bars share one scale, so lengths compare
-    R.pollrows.innerHTML = '<div class="hm-th"><span>Party</span><span>Pct.</span><span></span><span>Chg.</span></div>' + rows.map(function (r) {
-      return '<div class="hm-row"><i style="background:' + r.st.fill + '"></i><span class="nm">' + esc(r.st.name) + '</span>' +
-        '<span class="v">' + f1(r.v) + '%</span><span class="bar"><b style="width:' + (Math.min(1, r.v / scale) * 100).toFixed(1) + '%;background:' + r.st.fill + '"></b></span>' + chgCell(r.c) + '</div>';
-    }).join('');
+    R.pollcards.innerHTML = rows.map(function (r) { return tile(r.st.fill, f1(r.v), signed(r.c), r.st.short); }).join('');
     R.pollasof.textContent = 'Latest data, ' + longDate(g.end) + ' · changes on ' + days + ' days ago';
   }).catch(function () { R.pollsum.textContent = 'Poll data could not be loaded.'; });
 
   /* ---- party leaders: net ratings with a past-year sparkline ------------------------ */
   getJSON(LEADERS + 'page.json').then(function (index) {
     var g = index.groups.filter(function (x) { return x.id === 'overall'; })[0];
-    R.ldasof.textContent = 'Net rating (positive minus negative) · latest data, ' + longDate(g.end) + ' · changes on ' + (index.changeDays || 60) + ' days ago';
+    R.ldasof.textContent = 'Net rating (positive minus negative) · latest data, ' + longDate(g.end);
     var rows = index.leaders.filter(function (L) { return g.leaders[L.surname]; }).map(function (L) {
-      var m = g.leaders[L.surname]; return { L: L, net: m.pos - m.neg, pos: m.pos, neg: m.neg, chg: (m.pos - m.neg) - (m.posAgo - m.negAgo) };
+      var m = g.leaders[L.surname]; return { L: L, net: m.pos - m.neg, pos: m.pos, neg: m.neg };
     }).sort(function (a, b) { return b.net - a.net; });
     function draw(data) {
       var from = g.end - 365, lo = 0, hi = 0, pts = {};
@@ -85,18 +83,16 @@
         data[r.L.surname].net.map(lines).forEach(function (seg) { seg.forEach(function (q) { if (q[0] >= from) { pts[r.L.surname].push(q); lo = Math.min(lo, q[1]); hi = Math.max(hi, q[1]); } }); });
       });
       var root = (window.BE_SITE && window.BE_SITE.root) || '';
-      R.leaders.innerHTML = rows.map(function (r) {
-        var fill = BE.fill(r.L.party), ink = BE.text(r.L.party), netInk = BE.signal(r.net >= 0 ? 'positive' : 'negative', 'text'), spark = '';
-        var p = pts[r.L.surname];
+      R.leaders.innerHTML = rows.map(function (r, i) {
+        var fill = BE.fill(r.L.party), spark = '', p = pts[r.L.surname];
         if (p && p.length > 1) {
-          var sx = function (d) { return (d - from) / 365 * 200; }, sy = function (v) { return 3 + (hi - v) / ((hi - lo) || 1) * 24; };
-          spark = '<svg viewBox="0 0 200 30" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="200" y1="' + sy(0).toFixed(1) + '" y2="' + sy(0).toFixed(1) + '" stroke="#CCCCCC" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>' +
-            '<path d="' + pathOf(p.map(function (q) { return [sx(q[0]), sy(q[1])]; })) + '" fill="none" stroke="' + fill + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
+          var sx = function (d) { return (d - from) / 365 * 200; }, sy = function (v) { return 3 + (hi - v) / ((hi - lo) || 1) * 28; };
+          spark = '<svg viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="200" y1="' + sy(0).toFixed(1) + '" y2="' + sy(0).toFixed(1) + '" stroke="rgba(255,255,255,0.55)" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>' +
+            '<path d="' + pathOf(p.map(function (q) { return [sx(q[0]), sy(q[1])]; })) + '" fill="none" stroke="#FFFFFF" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
         }
-        return '<a class="hm-ld" href="' + esc(root + r.L.url) + '"><i style="background:' + fill + '"></i><div>' +
-          '<span class="nm" style="color:' + ink + '">' + esc(r.L.name) + '</span><span class="role">' + esc(r.L.role) + '</span>' +
-          '<span class="num" style="color:' + netInk + '">' + signed(r.net) + '</span>' +
-          '<span class="pn">Pos. <b>' + f1(r.pos) + '</b> Neg. <b>' + f1(r.neg) + '</b></span>' + chgCell(r.chg) + spark + '</div></a>';
+        return '<a class="ld-card" href="' + esc(root + r.L.url) + '" style="--fill:' + fill + '"><span class="num">' + signed(r.net) + '<small>net</small></span>' +
+          '<span class="pn">Positive <b>' + f1(r.pos) + '%</b><br>Negative <b>' + f1(r.neg) + '%</b></span>' + spark +
+          '<span class="rule"></span><span class="lab"><span class="rk">' + (i + 1) + '</span><span class="nm">' + esc(r.L.surname) + '</span></span><span class="role">' + esc(r.L.role) + '</span></a>';
       }).join('');
     }
     draw(null);
