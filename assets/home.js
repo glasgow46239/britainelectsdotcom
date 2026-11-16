@@ -7,7 +7,7 @@
   var VI = DATA + 'trackers/vi_westminster_24/data/', LEADERS = DATA + 'site/leaders/', ARTICLES = DATA + 'site/articles.json';
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  var INK = BE.neutral('ink'), GRID = BE.neutral('grid'), BASE = BE.neutral('baseline'), HALO = BE.neutral('halo'), MINUS = '−';
+  var INK = BE.neutral('ink'), MINUS = '−';
   var R = {};
   document.querySelectorAll('[data-r]').forEach(function (el) { R[el.getAttribute('data-r')] = el; });
 
@@ -27,12 +27,6 @@
     var d = seg.d0, out = [[d, seg.m[0] / 10]];
     for (var i = 0; i < seg.dd.length; i++) { d += seg.dd[i]; out.push([d, seg.m[i + 1] / 10]); }
     return out;
-  }
-  function spread(items, gap, lo, hi) {
-    var s = items.slice().sort(function (a, b) { return a.y0 - b.y0; }), i;
-    s.forEach(function (it) { it.y = Math.max(lo, it.y0); });
-    for (i = 1; i < s.length; i++) if (s[i].y < s[i - 1].y + gap) s[i].y = s[i - 1].y + gap;
-    if (s.length && s[s.length - 1].y > hi) { s[s.length - 1].y = hi; for (i = s.length - 2; i >= 0; i--) if (s[i].y > s[i + 1].y - gap) s[i].y = s[i + 1].y - gap; }
   }
 
   /* ---- Substack: lead story and the next six ------------------------------------- */
@@ -55,7 +49,11 @@
     }).join('');
   }).catch(function () { R.lead.innerHTML = '<div class="rule"><h2><a href="https://britainelects.substack.com">Read Britain Elects on Substack</a></h2></div>'; });
 
-  /* ---- polls: latest figures and a past-year chart -------------------------------- */
+  /* ---- polls: latest figures as a tight table, like the map tooltip cards --------- */
+  function chgCell(c) {
+    var col = Math.abs(c) < 0.05 ? BE.neutral('inkMuted') : BE.signal(c > 0 ? 'positive' : 'negative', 'text');
+    return '<span class="c" style="color:' + col + '">' + signed(c) + '</span>';
+  }
   getJSON(VI + 'page.json').then(function (index) {
     var g = index.groups.filter(function (x) { return x.id === 'overall'; })[0], days = index.changeDays || 60;
     var sumNow = 0, sumAgo = 0;
@@ -65,63 +63,20 @@
     if (g.cards.length === 5) rows.push({ k: 'Oth', st: party('oth'), v: Math.max(0, 100 - sumNow), c: Math.max(0, 100 - sumNow) - Math.max(0, 100 - sumAgo) });
     R.pollsum.innerHTML = '<b style="color:' + top.st.ink + '">' + esc(cap(top.st.the)) + '</b> ' + (gap === 0 ? 'and' : 'lead') + ' <b style="color:' + second.st.ink + '">' + esc(second.st.the) + '</b>' +
       (gap === 0 ? ' are level.' : ' by ' + f1(gap) + (gap === 1 ? ' point.' : ' points.'));
-    R.pollrows.innerHTML = rows.map(function (r) {
-      return '<div class="hm-row"><i style="background:' + r.st.fill + '"></i><span class="nm" style="color:' + r.st.ink + '">' + esc(r.st.name) + '</span>' +
-        '<span class="v" style="color:' + r.st.ink + '">' + f1(r.v) + '%</span><span class="c">' + signed(r.c) + '</span></div>';
+    var scale = Math.max(40, Math.ceil(top.v / 10) * 10);  // bars share one scale, so lengths compare
+    R.pollrows.innerHTML = '<div class="hm-th"><span>Party</span><span>Pct.</span><span></span><span>Chg.</span></div>' + rows.map(function (r) {
+      return '<div class="hm-row"><i style="background:' + r.st.fill + '"></i><span class="nm">' + esc(r.st.name) + '</span>' +
+        '<span class="v">' + f1(r.v) + '%</span><span class="bar"><b style="width:' + (Math.min(1, r.v / scale) * 100).toFixed(1) + '%;background:' + r.st.fill + '"></b></span>' + chgCell(r.c) + '</div>';
     }).join('');
     R.pollasof.textContent = 'Latest data, ' + longDate(g.end) + ' · changes on ' + days + ' days ago';
-    return getJSON(VI + g.file).then(function (data) { miniChart(g, data); });  // end labels use g.latest, as the table does
   }).catch(function () { R.pollsum.textContent = 'Poll data could not be loaded.'; });
-
-  function miniChart(g, data) {
-    var el = R.pollchart, W = Math.round(el.getBoundingClientRect().width) || 360, H = Math.round(el.getBoundingClientRect().height) || 190;
-    var start = g.end - 365, ML = 22, MR = 66, MT = 8, MB = 22, plotW = W - ML - MR, svg = '', ov = '', vmax = 0, series = [];
-    function X(d) { return ML + (d - start) / 365 * plotW; }
-    g.cards.forEach(function (p) {
-      var segs = (data[p] ? data[p].segs : []).map(lines).map(function (pts) { return pts.filter(function (q) { return q[0] >= start; }); }).filter(function (pts) { return pts.length > 1; });
-      segs.forEach(function (pts) { pts.forEach(function (q) { vmax = Math.max(vmax, q[1]); }); });
-      if (segs.length) series.push({ k: p, st: party(p), segs: segs });
-    });
-    var yMax = Math.max(30, Math.ceil((vmax + 3) / 10) * 10);
-    function Y(v) { return MT + (1 - v / yMax) * (H - MT - MB); }
-    for (var v = 10; v <= yMax; v += 10) {
-      svg += '<line x1="' + ML + '" x2="' + (W - MR) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '" stroke="' + GRID + '"/>';
-      ov += '<div style="left:0;width:' + (ML - 4) + 'px;text-align:right;top:' + (Y(v) - 7).toFixed(1) + 'px">' + (v === yMax ? v + '%' : v) + '</div>';
-    }
-    var halos = '', strokes = '', ends = [];
-    series.forEach(function (s) {
-      s.segs.forEach(function (pts) {
-        var d = pathOf(pts.map(function (q) { return [X(q[0]), Y(q[1])]; }));
-        halos += '<path d="' + d + '" fill="none" stroke="' + HALO + '" stroke-width="6" stroke-linejoin="round"/>';
-        strokes += '<path d="' + d + '" fill="none" stroke="' + s.st.fill + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
-      });
-      var last = s.segs[s.segs.length - 1], q = last[last.length - 1];
-      ends.push({ st: s.st, x: X(q[0]), v: g.latest[s.k] != null ? g.latest[s.k] : q[1], y0: Y(q[1]) });
-    });
-    svg += halos + strokes + '<line x1="' + ML + '" x2="' + (W - MR) + '" y1="' + (H - MB) + '" y2="' + (H - MB) + '" stroke="' + BASE + '" stroke-width="1.25"/>';
-    for (var mi = parts(start).y * 12 + parts(start).m + 1; ; mi++) {
-      var yy = Math.floor(mi / 12), mm = mi % 12, dd = dayOf(yy, mm, 1);
-      if (dd > g.end) break;
-      if (mm % 3 === 0) {
-        var x = X(dd).toFixed(1);
-        svg += '<line x1="' + x + '" x2="' + x + '" y1="' + (H - MB) + '" y2="' + (H - MB + 5) + '" stroke="' + BASE + '"/>';
-        ov += '<div style="left:' + x + 'px;top:' + (H - MB + 7) + 'px;transform:translateX(-50%)">' + (mm === 0 ? yy : MON[mm]) + '</div>';
-      }
-    }
-    spread(ends, 15, MT + 4, H - MB - 6);
-    ends.forEach(function (e) {
-      svg += '<circle cx="' + e.x.toFixed(1) + '" cy="' + e.y0.toFixed(1) + '" r="5.5" fill="' + HALO + '"/><circle cx="' + e.x.toFixed(1) + '" cy="' + e.y0.toFixed(1) + '" r="3.5" fill="' + HALO + '" stroke="' + e.st.fill + '" stroke-width="2"/>';
-      ov += '<div style="left:' + (e.x + 8).toFixed(1) + 'px;top:' + (e.y - 7).toFixed(1) + 'px;color:' + e.st.ink + ';font-weight:700;font-size:12px">' + f1(e.v) + '</div>';
-    });
-    el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + svg + '</svg><div class="ov">' + ov + '</div>';
-  }
 
   /* ---- party leaders: net ratings with a past-year sparkline ------------------------ */
   getJSON(LEADERS + 'page.json').then(function (index) {
     var g = index.groups.filter(function (x) { return x.id === 'overall'; })[0];
-    R.ldasof.textContent = 'Net rating (positive minus negative) · latest data, ' + longDate(g.end);
+    R.ldasof.textContent = 'Net rating (positive minus negative) · latest data, ' + longDate(g.end) + ' · changes on ' + (index.changeDays || 60) + ' days ago';
     var rows = index.leaders.filter(function (L) { return g.leaders[L.surname]; }).map(function (L) {
-      var m = g.leaders[L.surname]; return { L: L, net: m.pos - m.neg };
+      var m = g.leaders[L.surname]; return { L: L, net: m.pos - m.neg, pos: m.pos, neg: m.neg, chg: (m.pos - m.neg) - (m.posAgo - m.negAgo) };
     }).sort(function (a, b) { return b.net - a.net; });
     function draw(data) {
       var from = g.end - 365, lo = 0, hi = 0, pts = {};
@@ -140,7 +95,8 @@
         }
         return '<a class="hm-ld" href="' + esc(root + r.L.url) + '"><i style="background:' + fill + '"></i><div>' +
           '<span class="nm" style="color:' + ink + '">' + esc(r.L.name) + '</span><span class="role">' + esc(r.L.role) + '</span>' +
-          spark + '<span class="num" style="color:' + netInk + '">' + signed(r.net) + '</span></div></a>';
+          '<span class="num" style="color:' + netInk + '">' + signed(r.net) + '</span>' +
+          '<span class="pn">Pos. <b>' + f1(r.pos) + '</b> Neg. <b>' + f1(r.neg) + '</b></span>' + chgCell(r.chg) + spark + '</div></a>';
       }).join('');
     }
     draw(null);
