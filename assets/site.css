@@ -38,7 +38,7 @@ button, select { font: inherit; color: inherit; }
 
 /* ---- tracker: headline cards ------------------------------------------- */
 .tr-cards { margin-top: 32px; }
-.tr-asof, .tr-label { font-size: 11px; text-transform: uppercase; color: var(--be-ink-muted); }
+.tr-asof, .tr-label { font-size: 12px; text-transform: uppercase; color: var(--be-ink-muted); }
 .tr-asof { text-align: center; margin-bottom: 10px; }
 .tr-card-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
 .tr-card-grid.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 760px; margin: 0 auto; }
@@ -46,12 +46,12 @@ button, select { font: inherit; color: inherit; }
 .tr-card { border: 1px solid var(--be-border); border-radius: var(--be-radius); overflow: hidden; min-width: 0; background: var(--be-bg); }
 .tr-card i { display: block; height: 5px; }
 .tr-card > div { padding: 10px 12px 12px; }
-.tr-card .nm { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tr-card .nm { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tr-card .num { font-family: var(--be-font-figures); font-weight: 700; font-size: 40px; line-height: 1.1; letter-spacing: -0.04em; }
 .tr-card-grid.n3 .num { font-size: 48px; }
 .tr-card .num small { font-size: 0.45em; font-weight: 500; letter-spacing: 0; }
-.tr-card .chg { font-size: 13px; color: var(--be-ink-secondary); }
-.tr-rest { margin-top: 10px; text-align: center; font-size: 13px; color: var(--be-ink-secondary); }
+.tr-card .chg { font-family: var(--be-font-figures); font-size: 16px; font-weight: 500; color: var(--be-ink-secondary); }
+.tr-rest { margin-top: 10px; text-align: center; font-size: 14px; color: var(--be-ink-secondary); }
 
 /* ---- tracker: charts ---------------------------------------------------- */
 .tr-chart { margin-top: 44px; }
@@ -64,7 +64,7 @@ button, select { font: inherit; color: inherit; }
   .tr-plot.cmp { height: 360px; }
 }
 .tr-plot > svg, .tr-plot > .ov { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
-.tr-plot > .ov { pointer-events: none; font-size: 11px; color: var(--be-ink-muted); }
+.tr-plot > .ov { pointer-events: none; font-size: 12px; color: var(--be-ink-muted); }
 .tr-plot .ov > div { position: absolute; white-space: nowrap; line-height: 14px; }
 .tr-plot .yl { left: 0; text-align: right; }
 .tr-plot .xl { transform: translateX(-50%); }
@@ -79,7 +79,7 @@ button, select { font: inherit; color: inherit; }
 @media (max-width: 639px) { .tr-plot .lab b { font-size: 19px; } .tr-plot .lab span { font-size: 14px; } }
 
 .tr-under { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-top: 18px; }
-.tr-key { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: 11px; text-transform: uppercase; color: var(--be-ink-muted); }
+.tr-key { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: 12px; text-transform: uppercase; color: var(--be-ink-muted); }
 .tr-key span { display: flex; align-items: center; gap: 6px; }
 .tr-key i { display: block; }
 .tr-seg { display: flex; border: 1px solid #CCCCCC; border-radius: var(--be-radius); overflow: hidden; }
@@ -87,8 +87,8 @@ button, select { font: inherit; color: inherit; }
 .tr-seg button:first-child { border-left: 0; }
 .tr-seg button:hover { background: var(--be-surface); }
 .tr-seg button[aria-pressed="true"] { background: var(--be-ink); color: var(--be-bg); font-weight: 700; }
-.tr-note { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--be-border); font-size: 13px; color: var(--be-ink-secondary); }
-.tr-source { margin-top: 4px; font-size: 11px; color: var(--be-ink-muted); }
+.tr-note { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--be-border); font-size: 14px; color: var(--be-ink-secondary); }
+.tr-source { margin-top: 4px; font-size: 12px; color: var(--be-ink-muted); }
 
 /* ---- leader comparison -------------------------------------------------- */
 .tr-section { margin-top: 72px; border-top: 2px solid var(--be-ink); padding-top: 28px; }
@@ -102,7 +102,7 @@ button, select { font: inherit; color: inherit; }
 .cmp-table { flex: 1 1 340px; min-width: 0; }
 .cmp-table h3 { margin: 0 0 8px; font-size: var(--be-size-h2); font-weight: 700; letter-spacing: var(--be-heading-tracking); line-height: 1.15; }
 .cmp-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) 54px 42px 42px; align-items: center; gap: 6px; }
-.cmp-th { padding: 4px 8px; font-size: 11px; text-transform: uppercase; color: var(--be-ink-muted); }
+.cmp-th { padding: 4px 8px; font-size: 12px; text-transform: uppercase; color: var(--be-ink-muted); }
 .cmp-th span:nth-child(n+3), .cmp-row .f { text-align: right; }
 .cmp-rows { border-top: 1px solid var(--be-ink); }
 .cmp-rows button { width: 100%; min-height: 44px; padding: 4px 8px; border: 0; border-bottom: 1px solid #F0F0F0; background: var(--be-bg); text-align: left; cursor: pointer; font-size: 15px; }
@@ -111,10 +111,10 @@ button, select { font: inherit; color: inherit; }
 .cmp-rows .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .cmp-rows .who i { flex: none; width: 5px; height: 18px; }
 .cmp-rows .who span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cmp-rows .f { font-family: var(--be-font-figures); font-size: 13px; color: var(--be-ink-secondary); }
-.cmp-rows .f.net { font-weight: 700; font-size: 14px; }
+.cmp-rows .f { font-family: var(--be-font-figures); font-size: 14px; color: var(--be-ink-secondary); }
+.cmp-rows .f.net { font-weight: 700; font-size: 15px; }
 .cmp-rows .none { grid-column: span 3; text-align: right; font-size: 13px; color: var(--be-ink-muted); }
-.cmp-foot { margin: 14px 0 0; font-size: 13px; color: var(--be-ink-secondary); }
+.cmp-foot { margin: 14px 0 0; font-size: 14px; color: var(--be-ink-secondary); }
 
 /* ---- articles ------------------------------------------------------------ */
 .arts-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-bottom: 20px; }
@@ -136,15 +136,15 @@ button, select { font: inherit; color: inherit; }
 .ld-card > div { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .ld-card .rk { font-family: var(--be-font-figures); font-size: 12px; color: var(--be-ink-muted); }
 .ld-card .nm { font-size: 15px; font-weight: 700; line-height: 1.2; }
-.ld-card .role { font-size: 13px; color: var(--be-ink-secondary); }
+.ld-card .role { font-size: 14px; color: var(--be-ink-secondary); }
 .ld-card .num { font-family: var(--be-font-figures); font-weight: 700; font-size: 40px; line-height: 1.1; letter-spacing: -0.04em; margin-top: 6px; }
-.ld-card .num small { font-size: 13px; font-family: var(--be-font); font-weight: 400; letter-spacing: 0; color: var(--be-ink-secondary); margin-left: 4px; }
-.ld-card .pn { font-size: 13px; color: var(--be-ink-secondary); }
+.ld-card .num small { font-size: 14px; font-family: var(--be-font); font-weight: 400; letter-spacing: 0; color: var(--be-ink-secondary); margin-left: 4px; }
+.ld-card .pn { font-size: 15px; color: var(--be-ink-secondary); }
 .ld-card .pn { line-height: 1.4; margin-top: 2px; }
-.ld-card .pn b { font-weight: 700; color: var(--be-ink); }
-.ld-card .chg { font-size: 13px; color: var(--be-ink-secondary); }
+.ld-card .pn b { font-family: var(--be-font-figures); font-weight: 700; color: var(--be-ink); }
+.ld-card .chg { font-family: var(--be-font-figures); font-size: 16px; font-weight: 500; color: var(--be-ink-secondary); margin-top: 2px; }
 .ld-card svg { display: block; width: 100%; height: 36px; margin-top: 8px; }
-.ld-card .more { margin-top: auto; padding-top: 8px; font-size: 13px; color: var(--be-positive); }
+.ld-card .more { margin-top: auto; padding-top: 8px; font-size: 14px; color: var(--be-positive); }
 @media (max-width: 900px) { .ld-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 /* phones: one leader per row, the net figure on the right */
 @media (max-width: 640px) {
@@ -161,6 +161,7 @@ button, select { font: inherit; color: inherit; }
 @media (max-width: 700px) {
   .tr-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .tr-card .num { font-size: 28px; }
+  .tr-card .nm { font-size: 13px; }
   .tr-card-grid.n3 .num { font-size: 30px; }
 }
 @media (max-width: 520px) { .arts { grid-template-columns: minmax(0, 1fr); } .tr-select select { min-width: 0; width: 100%; } .tr-select { width: 100%; } }
