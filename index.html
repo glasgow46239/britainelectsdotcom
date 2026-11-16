@@ -20,20 +20,25 @@
 <main class="hm wrap">
   <h1 class="visually-hidden">Britain Elects</h1>
 
-  <div class="hm-top">
-    <article class="hm-lead" data-r="lead" aria-label="Latest article">
-      <div class="hm-lead-ph"></div>
-    </article>
+  <section class="hm-polls" aria-labelledby="hm-polls-h">
+    <div class="hm-kicker">Westminster voting intention</div>
+    <h2 id="hm-polls-h"><a href="polls/">What do the polls say?</a></h2>
+    <p class="hm-sum" data-r="pollsum">&nbsp;</p>
+    <div class="tr-card-grid" data-r="pollcards"></div>
+    <div class="hm-asof" data-r="pollasof">&nbsp;</div>
+    <div class="hm-btns">
+      <a class="hm-btn dark" href="polls/">The full Britain Elects poll tracker</a>
+      <a class="hm-btn light" href="https://glasgow46239.github.io/britainpredicts/">What our election model says</a>
+    </div>
+  </section>
 
-    <section class="hm-polls" aria-labelledby="hm-polls-h">
-      <div class="hm-kicker">Westminster voting intention</div>
-      <h2 id="hm-polls-h"><a href="polls/">What do the polls say?</a></h2>
-      <p class="hm-sum" data-r="pollsum">&nbsp;</p>
-      <div class="hm-rows" data-r="pollrows"></div>
-      <div class="hm-asof" data-r="pollasof">&nbsp;</div>
-      <a class="hm-more" href="polls/">Full poll tracker &rarr;</a>
-    </section>
-  </div>
+  <section class="hm-sec" aria-labelledby="hm-feed-h">
+    <div class="hm-sec-head">
+      <h2 id="hm-feed-h">Latest analysis</h2>
+      <a href="https://britainelects.substack.com/archive">View all &rarr;</a>
+    </div>
+    <div class="hm-feed" data-r="feed"><div class="hm-feed-ph"></div></div>
+  </section>
 
   <section class="hm-sec" aria-labelledby="hm-ld-h">
     <div class="hm-sec-head">
@@ -41,12 +46,12 @@
       <a href="leaders/">Compare the leaders &rarr;</a>
     </div>
     <div class="hm-asof" data-r="ldasof">&nbsp;</div>
-    <div class="hm-leaders" data-r="leaders"></div>
+    <div class="ld-grid" data-r="leaders"></div>
   </section>
 
-  <section class="hm-sec" aria-labelledby="hm-arts-h">
+  <section class="hm-sec" aria-labelledby="hm-arts-h" data-r="moresec" hidden>
     <div class="hm-sec-head">
-      <h2 id="hm-arts-h">Latest from Britain Elects</h2>
+      <h2 id="hm-arts-h">More from Britain Elects</h2>
       <a href="https://britainelects.substack.com/archive">All articles &rarr;</a>
     </div>
     <div class="hm-arts" data-r="arts"></div>

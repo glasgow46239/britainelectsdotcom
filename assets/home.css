@@ -1,97 +1,92 @@
-/* Britain Elects homepage. Colours and type come from be.css; layout only. */
+/* Britain Elects homepage. Colours and type come from be.css; the tiles (.tr-card, .ld-card) from site.css. */
 
 .hm { padding-top: 32px; }
-.hm-kicker, .hm-asof { font-size: 12px; text-transform: uppercase; color: var(--be-ink-muted); }
+.hm-kicker, .hm-asof, .hm-meta { font-size: 12px; text-transform: uppercase; color: var(--be-ink-muted); }
 .hm h2 { font-weight: 700; letter-spacing: var(--be-heading-tracking); line-height: 1.15; }
 .hm h2 a, .hm h3 a { color: var(--be-ink); }
-.hm-more, .hm-sec-head a { font-size: 15px; }
+.hm-sec-head a { font-size: 15px; }
 
-/* ---- top: lead article + polls panel ------------------------------------------- */
-.hm-top { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 40px; align-items: start; }
-.hm-lead img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--be-radius); background: var(--be-surface); margin-bottom: 16px; }
-.hm-lead h2 { margin: 6px 0 10px; font-size: clamp(2rem, 4.2vw, 3rem); line-height: 1.08; text-wrap: balance; }
-.hm-lead p { margin: 0 0 12px; font-size: 19px; color: var(--be-ink-secondary); text-wrap: pretty; }
-.hm-lead .hm-kicker { color: var(--be-positive); }
-.hm-lead-ph { height: 320px; border-radius: var(--be-radius); background: var(--be-surface); }
-.hm-lead .rule { border-top: 2px solid var(--be-ink); padding-top: 14px; }
-.hm-also { list-style: none; margin: 24px 0 0; padding: 0; border-top: 1px solid var(--be-border); }
-.hm-also li { padding: 12px 0; border-bottom: 1px solid var(--be-border); display: flex; flex-direction: column; gap: 2px; }
-.hm-also a { color: var(--be-ink); font-weight: 700; font-size: var(--be-size-h2); line-height: 1.25; letter-spacing: var(--be-heading-tracking); }
-
+/* ---- polls: full width of the wrap ------------------------------------------------ */
 .hm-polls { border-top: 2px solid var(--be-ink); padding-top: 14px; }
-.hm-polls h2 { margin: 4px 0 4px; font-size: 1.5rem; }
-.hm-sum { margin: 0 0 12px; font-size: 15px; color: var(--be-ink-secondary); }
+.hm-polls h2 { margin: 4px 0 4px; font-size: clamp(1.75rem, 3.4vw, 2.25rem); }
+.hm-sum { margin: 0 0 16px; font-size: 18px; color: var(--be-ink-secondary); }
 .hm-sum b { font-weight: 700; }
-/* a tight table, like the tooltip cards on the maps: stripe, name, pct., bar, chg. */
-.hm-rows { --cols: 4px minmax(0, 1fr) 54px minmax(40px, 0.9fr) 46px; }
-.hm-th, .hm-row { display: grid; grid-template-columns: var(--cols); align-items: center; column-gap: 8px; }
-.hm-th { padding: 0 0 4px; border-bottom: 1px solid var(--be-ink); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--be-ink-muted); }
-.hm-th span:first-child { grid-column: 1 / 3; }
-.hm-th span:nth-child(2), .hm-th span:last-child { text-align: right; }
-.hm-row { padding: 2px 0; line-height: 1.3; border-bottom: 1px solid #F0F0F0; }
-.hm-row i { display: block; width: 4px; height: 16px; }
-.hm-row .nm { font-size: 15px; font-weight: 700; color: var(--be-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hm-row .v { font-family: var(--be-font-figures); font-weight: 700; font-size: 16px; text-align: right; color: var(--be-ink); }
-.hm-row .bar { display: block; height: 10px; }
-.hm-row .bar b { display: block; height: 100%; }
-.hm-row .c, .hm-ld .c { font-family: var(--be-font-figures); font-weight: 700; font-size: 15px; text-align: right; }
 .hm-polls .hm-asof { margin-top: 10px; }
-.hm-polls .hm-more { display: inline-block; margin-top: 8px; }
+.hm-btns { display: flex; gap: 8px; margin-top: 16px; }
+.hm-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 20px; border-radius: var(--be-radius); font-size: 16px; font-weight: 700; text-align: center; }
+.hm-btn:hover { text-decoration: none; }
+.hm-btn.dark { background: #111111; color: #FFFFFF; }
+.hm-btn.dark:hover { background: #333333; color: #FFFFFF; }
+.hm-btn.light { background: #F0EDE8; color: #111111; }
+.hm-btn.light:hover { background: #E5E0DA; color: #111111; }
 
 /* ---- sections -------------------------------------------------------------------- */
 .hm-sec { margin-top: 56px; border-top: 2px solid var(--be-ink); padding-top: 14px; }
-.hm-sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 24px; margin-bottom: 14px; }
+.hm-sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 24px; margin-bottom: 18px; }
 .hm-sec-head h2 { margin: 0; font-size: 1.5rem; }
+.hm-sec > .hm-asof { margin: -8px 0 12px; }
 
-.hm-leaders { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
-.hm-ld { display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--be-border); border-radius: var(--be-radius); overflow: hidden; color: var(--be-ink); }
-.hm-ld:hover { text-decoration: none; color: var(--be-ink); border-color: #BBBBBB; }
-.hm-ld > i { display: block; height: 5px; }
-.hm-ld > div { padding: 10px 12px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; align-items: baseline; }
-.hm-ld .nm { font-size: 15px; font-weight: 700; line-height: 1.2; grid-column: 1 / -1; }
-.hm-ld .role { font-size: 14px; color: var(--be-ink-secondary); grid-column: 1 / -1; }
-.hm-ld .num { font-family: var(--be-font-figures); font-weight: 700; font-size: 30px; line-height: 1; letter-spacing: -0.04em; margin-top: 10px; }
-.hm-ld .c { text-align: left; }
-.hm-ld .pn { grid-column: 1 / -1; margin-top: 6px; font-size: 14px; color: var(--be-ink-secondary); white-space: nowrap; }
-.hm-ld .pn b { font-family: var(--be-font-figures); font-weight: 700; color: var(--be-ink); margin-right: 6px; }
-.hm-ld svg { grid-column: 1 / -1; width: 100%; height: 30px; display: block; margin-top: 8px; }
+/* ---- story cards, shared by the feed and the 'more' grid -------------------------------- */
+.pic { display: block; margin-bottom: 12px; }
+.pic img, .pic .ph { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--be-radius); background: var(--be-surface); }
+.pic .ph { display: flex; align-items: center; justify-content: center; }
+.pic .ph img { width: 44px; height: 44px; aspect-ratio: auto; background: none; opacity: 0.18; border-radius: 0; }
+.hm-card h3 { margin: 0 0 4px; font-size: 19px; font-weight: 700; line-height: 1.3; letter-spacing: var(--be-heading-tracking); text-wrap: pretty; }
+.hm-card p { margin: 0 0 6px; font-size: 15px; line-height: 1.4; color: var(--be-ink-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-.hm-arts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 24px; }
-.hm-art img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--be-radius); background: var(--be-surface); margin-bottom: 10px; }
-.hm-art h3 { margin: 6px 0; font-size: var(--be-size-h2); font-weight: 700; line-height: 1.2; letter-spacing: var(--be-heading-tracking); }
-.hm-art p { margin: 0; font-size: 15px; color: var(--be-ink-secondary); }
-.hm-art.noimg { border-top: 1px solid var(--be-border); padding-top: 10px; }
+/* ---- the feed: lead in the middle, two stories either side -------------------------------- */
+.hm-feed { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr) minmax(0, 1fr); grid-template-areas: "l lead r"; }
+.hm-feed > .col { display: flex; flex-direction: column; gap: 32px; }
+.hm-feed > .col:nth-of-type(1) { grid-area: l; padding-right: 24px; }
+.hm-feed > .col:nth-of-type(2) { grid-area: r; padding-left: 24px; }
+.hm-lead { grid-area: lead; padding: 0 24px; border-left: 1px solid var(--be-border); border-right: 1px solid var(--be-border); text-align: center; }
+.hm-lead .pic img, .hm-lead .pic .ph { aspect-ratio: 3 / 2; }
+.hm-lead .pic { margin-bottom: 28px; }
+.hm-lead h3 { margin: 0 auto 10px; max-width: 30ch; font-size: clamp(1.625rem, 2.6vw, 2.125rem); font-weight: 700; line-height: 1.15; letter-spacing: var(--be-heading-tracking); text-wrap: balance; }
+.hm-lead p { margin: 0 auto 10px; max-width: 46ch; font-size: 18px; line-height: 1.45; color: var(--be-ink-secondary); text-wrap: pretty; }
+.hm-feed-ph { grid-column: 1 / -1; height: 420px; background: var(--be-surface); border-radius: var(--be-radius); }
 
+.hm-arts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; }
+
+/* ---- trackers directory and subscribe band ------------------------------------------------- */
 .hm-dir { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .hm-dir a { display: flex; flex-direction: column; gap: 2px; min-height: 44px; padding: 12px; border: 1px solid var(--be-border); border-radius: var(--be-radius); color: var(--be-ink); }
 .hm-dir a:hover { text-decoration: none; background: var(--be-surface); color: var(--be-ink); }
 .hm-dir b { font-size: 15px; }
-.hm-dir span { font-size: 13px; color: var(--be-ink-secondary); }
+.hm-dir span { font-size: 14px; color: var(--be-ink-secondary); }
 
 .hm-sub { margin-top: 56px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; padding: 28px; background: var(--be-ink); color: var(--be-bg); border-radius: var(--be-radius); }
 .hm-sub h2 { margin: 0 0 4px; font-size: 1.5rem; }
 .hm-sub p { margin: 0; color: #C9CBC8; }
-.hm-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; background: var(--be-bg); color: var(--be-ink); font-weight: 700; border-radius: var(--be-radius); }
-.hm-btn:hover { text-decoration: none; background: var(--be-surface); color: var(--be-ink); }
+.hm-sub .hm-btn { flex: none; background: var(--be-bg); color: var(--be-ink); }
+.hm-sub .hm-btn:hover { background: var(--be-surface); color: var(--be-ink); }
 
 @media (max-width: 900px) {
-  .hm-top { grid-template-columns: minmax(0, 1fr); gap: 32px; }
-  .hm-leaders { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* lead across the top, then the four stories in two columns */
+  .hm-feed { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "lead lead" "l r"; row-gap: 32px; }
+  .hm-lead { border: 0; padding: 0 0 32px; border-bottom: 1px solid var(--be-border); }
+  .hm-feed > .col:nth-of-type(1) { padding-right: 12px; }
+  .hm-feed > .col:nth-of-type(2) { padding-left: 12px; }
   .hm-arts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hm-dir { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
   .hm { padding-top: 20px; }
+  .hm-sum { font-size: 17px; }
+  .hm-btns { flex-direction: column; }
+  .hm-feed { grid-template-columns: minmax(0, 1fr); grid-template-areas: "lead" "l" "r"; }
+  .hm-feed { row-gap: 20px; }
+  .hm-feed > .col { gap: 20px; }
+  .hm-feed > .col:nth-of-type(1), .hm-feed > .col:nth-of-type(2) { padding: 0; }
+  /* on phones the smaller stories become rows: thumbnail on the left */
+  .hm-card { display: grid; grid-template-columns: 112px minmax(0, 1fr); column-gap: 12px; align-items: start; }
+  .hm-card .pic { grid-row: 1 / span 3; margin: 2px 0 0; }
+  .hm-card .pic img, .hm-card .pic .ph { aspect-ratio: 4 / 3; }
+  .hm-card h3 { font-size: 17px; }
+  .hm-card p { display: none; }
+  .hm-lead .pic { margin-bottom: 18px; }
   .hm-lead p { font-size: 17px; }
-  .hm-leaders { grid-template-columns: minmax(0, 1fr); }
-  .hm-ld > div { grid-template-columns: minmax(0, 1fr) 72px auto; grid-template-rows: auto auto auto; column-gap: 12px; row-gap: 0; align-items: center; }
-  .hm-ld .nm { grid-column: 1; grid-row: 1; }
-  .hm-ld .role { grid-column: 1; grid-row: 2; }
-  .hm-ld .pn { grid-column: 1; grid-row: 3; margin-top: 4px; }
-  .hm-ld svg { grid-column: 2; grid-row: 1 / span 3; margin: 0; height: 34px; }
-  .hm-ld .num { grid-column: 3; grid-row: 1 / span 2; margin: 0; font-size: 28px; text-align: right; align-self: end; }
-  .hm-ld .c { grid-column: 3; grid-row: 3; text-align: right; }
-  .hm-arts { grid-template-columns: minmax(0, 1fr); }
+  .hm-arts { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .hm-dir { grid-template-columns: minmax(0, 1fr); }
   .hm-sub { padding: 22px 18px; }
 }
