@@ -322,13 +322,20 @@
     var grey = '', litp = '', ends = [];
     L0.forEach(function (L) {
       var a = Math.max(0, L.first), b = Math.min(L.last, maxDay); if (b <= a) return;
-      var stride = Math.max(1, Math.floor((b - a) / (plotW / 1.5))), pts = [];
-      for (var d = a; d <= b; d += stride) { var vv = L.netv[d - L.first]; if (vv != null) pts.push([X(d), Y(vv)]); }
-      if (L.netv[b - L.first] != null) pts.push([X(b), Y(L.netv[b - L.first])]);
-      var dp = pathOf(pts), isLit = L.current || L.surname === lit;
+      // one path piece per run of days with data, so the line breaks where there were no polls
+      var stride = Math.max(1, Math.floor((b - a) / (plotW / 1.5))), runs = [], run = null;
+      for (var d = a; d <= b; d++) {
+        var vv = L.netv[d - L.first];
+        if (vv == null) { run = null; continue; }
+        if (!run) { run = { s: d, pts: [] }; runs.push(run); }
+        if ((d - run.s) % stride === 0 || d === b || L.netv[d + 1 - L.first] == null) run.pts.push([X(d), Y(vv)]);
+      }
+      var dp = runs.filter(function (r) { return r.pts.length > 1; }).map(function (r) { return pathOf(r.pts); }).join(' '), isLit = L.current || L.surname === lit;
       if (isLit) litp += '<path d="' + dp + '" fill="none" stroke="' + HALO + '" stroke-width="8.5" stroke-linejoin="round" stroke-linecap="round"/><path d="' + dp + '" fill="none" stroke="' + L.fill + '" stroke-width="' + (L.current ? 3 : 2.5) + '" stroke-linejoin="round" stroke-linecap="round"/>';
       else grey += '<path d="' + dp + '" fill="none" stroke="#CBCDCA" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
-      ends.push({ L: L, lit: isLit, edge: b >= maxDay - 1, x0: X(b) + 6, y0: Y(L.netv[b - L.first]) });
+      var lastRun = runs[runs.length - 1]; if (!lastRun) return;
+      var endPt = lastRun.pts[lastRun.pts.length - 1];
+      ends.push({ L: L, lit: isLit, edge: b >= maxDay - 1 && endPt[0] >= X(b) - 0.5, x0: endPt[0] + 6, y0: endPt[1] });
     });
     // the current leader's line goes on top
     svg += grey + litp;
